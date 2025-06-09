@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+pydantic
+pydantic_settings
+python-dotenv
+httpx
+jinja2
+python-multipart
+email-validator
+
+# Development tools
+black
+flake8
+isort
+pytest
+pytest-asyncio
+pytest-cov

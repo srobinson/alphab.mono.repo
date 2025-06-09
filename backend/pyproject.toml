@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "particle0-backend"
+version = "0.1.0"
+description = "Backend for Alphab Molecule/Vault POC"
+requires-python = ">=3.9"
+
+[project.scripts]
+uvicorn = "uvicorn app.main:app --reload --port 8000"
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+multi_line_output = 3
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_functions = "test_*"
+python_classes = "Test*"
+addopts = "--cov=app --cov-report=term-missing --cov-report=xml:coverage.xml"
