@@ -10,6 +10,7 @@
     "dev:frontend": "cd frontend && pnpm run dev",
     "dev:backend": "cd backend && python -m uvicorn app.main:app --reload --port 8000",
     "dev:all": "concurrently \"pnpm run dev:frontend\" \"pnpm run dev:backend\"",
+    "build": "pnpm run build:frontend",
     "build:frontend": "cd frontend && pnpm run build",
     "lint:frontend": "cd frontend && pnpm run lint",
     "lint:backend": "cd backend && flake8",

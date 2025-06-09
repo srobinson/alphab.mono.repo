@@ -17,9 +17,11 @@ def create_application() -> FastAPI:
 
     # Set up CORS
     if settings.BACKEND_CORS_ORIGINS:
+        # Split the comma-separated string into a list of origins
+        origins = [origin.strip() for origin in settings.BACKEND_CORS_ORIGINS.split(",")]
         application.add_middleware(
             CORSMiddleware,
-            allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+            allow_origins=origins,
             allow_credentials=True,
             allow_methods=["*"],
             allow_headers=["*"],

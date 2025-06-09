@@ -9,7 +9,7 @@ router = APIRouter()
 class ExampleItem(BaseModel):
     id: int
     name: str
-    description: str = None
+    description: str = ""
 
 
 # Mock data

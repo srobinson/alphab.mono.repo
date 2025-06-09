@@ -2,6 +2,13 @@
 
 A next-generation AI-powered platform with a microservices architecture, featuring a Python FastAPI backend and a React + TypeScript frontend. This monorepo contains the Alphab Molecule/Vault POC implementation.
 
+## Features
+
+- **Modern Authentication** - Secure authentication with Logto SSO integration, OAuth2 PKCE flows, and role-based access control
+- **React Frontend** - TypeScript-based React application with a modern component library
+- **FastAPI Backend** - High-performance Python API with automatic documentation
+- **Responsive Design** - Mobile-first design approach with Tailwind CSS
+
 ## Project Structure
 
 ```
@@ -10,7 +17,7 @@ particle0/
 ├── backend/         # Python FastAPI application
 ├── .vscode/         # VSCode workspace settings
 ├── .github/         # GitHub Actions workflows
-└── docs/            # Project documentation
+└── DOCS/            # Project documentation
 ```
 
 ## Getting Started
@@ -129,9 +136,10 @@ The project uses GitHub Actions for CI/CD:
 
 ## Documentation
 
-For detailed documentation, see the `docs/` directory:
+For detailed documentation, see the `DOCS/` directory:
 
 - Architecture overview
+- [Authentication system](DOCS/AUTHENTICATION.md)
 - API documentation
 - Development guidelines
 - Deployment procedures

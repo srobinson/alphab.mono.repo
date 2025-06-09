@@ -1,11 +1,13 @@
 import { Button } from './components/ui/button';
 import { ThemeToggle } from './components/theme-toggle';
+import { AuthStatus } from './components/auth-status';
 import './animations.css';
 
 function App() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-4 right-4 flex items-center gap-4">
+        <AuthStatus />
         <ThemeToggle />
       </div>
 
