@@ -1,2 +1,6 @@
+# pnpm-workspace.yaml
 packages:
-  - 'frontend'
+  - packages/auth-backend
+  - packages/auth-frontend
+  - packages/particle0-backend
+  - packages/particle0-frontend

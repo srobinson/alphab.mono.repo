@@ -13,11 +13,16 @@ A next-generation AI-powered platform with a microservices architecture, featuri
 
 ```
 particle0/
-├── frontend/        # React + TypeScript application
-├── backend/         # Python FastAPI application
-├── .vscode/         # VSCode workspace settings
-├── .github/         # GitHub Actions workflows
-└── DOCS/            # Project documentation
+├── frontend/                  # Original React + TypeScript application
+├── backend/                   # Original Python FastAPI application
+├── packages/                  # Reusable packages
+│   ├── auth-backend/          # Reusable authentication backend package
+│   ├── auth-frontend/         # Reusable authentication frontend package
+│   ├── particle0-backend/     # Migrated backend using auth-backend
+│   └── particle0-frontend/    # Migrated frontend using auth-frontend
+├── .vscode/                   # VSCode workspace settings
+├── .github/                   # GitHub Actions workflows
+└── DOCS/                      # Project documentation
 ```
 
 ## Getting Started
@@ -44,7 +49,12 @@ particle0/
    ```bash
    # From project root
    pnpm install
+
+   # For original frontend
    pnpm run dev:frontend
+
+   # For new packages
+   pnpm run dev:packages
    ```
 
 3. **Backend Setup:**
@@ -70,6 +80,10 @@ particle0/
    # Or go back to root and run
    # cd ..
    # pnpm run dev:backend
+
+   # Or for the new backend package
+   # cd ..
+   # pnpm run dev:particle0-backend
    ```
 
    The backend API will be available at:
@@ -87,9 +101,12 @@ particle0/
 
 ### Root Level
 
-- `pnpm run dev:all` - Run both frontend and backend concurrently
+- `pnpm run dev:all` - Run both original frontend and backend concurrently
+- `pnpm run dev:packages` - Run both new frontend and backend packages concurrently
 - `pnpm run lint` - Lint all code
 - `pnpm run format` - Format all code
+- `pnpm run build` - Build all packages
+- `pnpm run test` - Test all packages
 
 ### Frontend
 
@@ -140,9 +157,83 @@ For detailed documentation, see the `DOCS/` directory:
 
 - Architecture overview
 - [Authentication system](DOCS/AUTHENTICATION.md)
+- [Authentication refactoring](DOCS/AUTH_REFACTORING.md)
+- [Testing strategy](DOCS/TESTING_STRATEGY.md)
 - API documentation
 - Development guidelines
 - Deployment procedures
+
+## Packages
+
+The project includes several reusable packages:
+
+### auth-backend
+
+A reusable authentication package for FastAPI applications using Logto as the authentication provider.
+
+[View auth-backend documentation](packages/auth-backend/README.md)
+
+### auth-frontend
+
+A reusable authentication package for React applications using Logto as the authentication provider.
+
+[View auth-frontend documentation](packages/auth-frontend/README.md)
+
+### particle0-backend
+
+The backend service for the Particle0 application, built with FastAPI and using the `auth-backend` package.
+
+[View particle0-backend documentation](packages/particle0-backend/README.md)
+
+### particle0-frontend
+
+The frontend application for the Particle0 platform, built with React, TypeScript, and Vite, using the `auth-frontend` package.
+
+[View particle0-frontend documentation](packages/particle0-frontend/README.md)
+
+## Migration to Packages Structure
+
+The project is being migrated from the original structure (with separate `frontend` and `backend` directories) to a packages-based structure. This migration provides several benefits:
+
+1. **Reusable Components**: Common functionality like authentication is extracted into reusable packages
+2. **Better Organization**: Related code is grouped together in dedicated packages
+3. **Easier Maintenance**: Each package has its own tests, documentation, and dependencies
+4. **Improved Collaboration**: Teams can work on different packages independently
+
+### Migration Process
+
+To migrate the codebase to the new structure:
+
+1. Run the migration script:
+
+   ```bash
+   ./migrate-to-packages.sh
+   ```
+
+2. Review the migrated code and fix any import issues
+
+3. Test the new package structure:
+
+   ```bash
+   pnpm run dev:packages
+   ```
+
+4. Once everything is working, you can remove the old frontend and backend directories
+
+### Post-Migration Structure
+
+After migration, the project structure will be:
+
+```
+particle0/
+├── packages/                  # All code lives here
+│   ├── auth-backend/          # Reusable authentication backend package
+│   ├── auth-frontend/         # Reusable authentication frontend package
+│   ├── particle0-backend/     # Main backend application
+│   └── particle0-frontend/    # Main frontend application
+├── DOCS/                      # Project documentation
+└── ... (configuration files)
+```
 
 ## License
 

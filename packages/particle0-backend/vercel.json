@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "particle0_backend/main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "particle0_backend/main.py"
+    }
+  ],
+  "env": {
+    "APP_MODULE": "particle0_backend:main"
+  },
+  "git": {
+    "deploymentEnabled": {
+      "main": false
+    }
+  }
+}
