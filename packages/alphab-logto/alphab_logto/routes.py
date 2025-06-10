@@ -48,9 +48,7 @@ async def options_signout() -> dict[str, Any]:
 
 
 @router.get("/signout")
-async def signout(
-    request: Request, auth_service: AuthService = Depends(get_auth_service)
-) -> Response:
+async def signout(request: Request, auth_service: AuthService = Depends(get_auth_service)) -> Response:
     """
     Sign out the current user.
 
@@ -140,9 +138,7 @@ async def options_session() -> dict[str, Any]:
 
 
 @router.get("/session")
-async def get_session(
-    request: Request, auth_service: AuthService = Depends(get_auth_service)
-) -> dict[str, Any]:
+async def get_session(request: Request, auth_service: AuthService = Depends(get_auth_service)) -> dict[str, Any]:
     """
     Get the current session information.
 
@@ -239,9 +235,7 @@ async def options_validate_token() -> dict[str, Any]:
 
 
 @router.get("/validate-token")
-async def validate_token(
-    request: Request, auth_service: AuthService = Depends(get_auth_service)
-) -> dict[str, Any]:
+async def validate_token(request: Request, auth_service: AuthService = Depends(get_auth_service)) -> dict[str, Any]:
     """
     Validate the current token and return a new one if needed.
 
