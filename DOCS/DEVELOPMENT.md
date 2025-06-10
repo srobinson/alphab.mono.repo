@@ -158,7 +158,7 @@ For more details, see the CI/CD configuration in `.github/workflows/`.
 1. **Port Already in Use**:
 
    - Frontend: Change the port by setting `PORT=3001` in your `.env` file
-   - Backend: Use `--port 8001` when starting uvicorn
+   - Backend: Use `--port 8000` when starting uvicorn
 
 2. **Module Not Found Errors in Backend**:
 

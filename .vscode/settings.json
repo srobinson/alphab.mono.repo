@@ -48,6 +48,7 @@
   ],
   "search.exclude": {
     "**/node_modules": true,
+    "**/.venv": true,
     "**/venv": true,
     "**/.git": true,
     "**/dist": true,
@@ -59,6 +60,9 @@
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
   "[dotenv]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  },
+  "[ignore]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   }
 }

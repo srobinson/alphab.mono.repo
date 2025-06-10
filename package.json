@@ -4,40 +4,42 @@
   "description": "Alphab Molecule/Vault POC - Monorepo for AI-powered platform",
   "private": true,
   "workspaces": [
-    "frontend"
+    "packages/*"
   ],
   "scripts": {
-    "dev:frontend": "cd frontend && pnpm run dev",
-    "dev:backend": "cd backend && python -m uvicorn app.main:app --reload --port 8000",
-    "dev:all": "concurrently \"pnpm run dev:frontend\" \"pnpm run dev:backend\"",
-    "build": "pnpm run build:frontend",
-    "build:frontend": "cd frontend && pnpm run build",
-    "lint:frontend": "cd frontend && pnpm run lint",
-    "lint:backend": "cd backend && flake8",
-    "lint": "pnpm run lint:frontend && pnpm run lint:backend",
-    "format:frontend": "cd frontend && pnpm run format",
-    "format:backend": "cd backend && black .",
-    "format": "pnpm run format:frontend && pnpm run format:backend",
-    "test:frontend": "cd frontend && pnpm run test",
-    "test:backend": "cd backend && python -m pytest",
-    "test": "pnpm run test:frontend && pnpm run test:backend",
+    "// Turbo scripts": "",
+    "dev": "turbo dev",
+    "dev:all": "concurrently \"pnpm run dev:particle0-backend\" \"pnpm run dev:particle0-frontend\"",
+    "dev:particle0-backend": "cd packages/particle0-backend && python uvicorn particle0_backend.main:app --reload --port 8000",
+    "dev:particle0-frontend": "cd packages/particle0-frontend && pnpm run dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "format": "turbo format",
+    "test": "turbo test",
+    "// Package-specific scripts": "",
+    "format:auth-backend": "cd packages/auth-backend && black .",
+    "format:particle0-backend": "cd packages/particle0-backend && black .",
+    "test:auth-backend": "cd packages/auth-backend && python -m pytest",
+    "test:auth-frontend": "cd packages/auth-frontend && pnpm run test",
     "prepare": "husky install"
   },
   "engines": {
     "node": ">=18.0.0",
     "pnpm": ">=8.0.0"
   },
+  "packageManager": "pnpm@9.15.0",
   "devDependencies": {
     "concurrently": "^8.2.2",
     "husky": "^8.0.3",
-    "lint-staged": "^15.1.0"
+    "lint-staged": "^15.1.0",
+    "turbo": "^2.5.4"
   },
   "lint-staged": {
-    "frontend/**/*.{js,jsx,ts,tsx}": [
-      "cd frontend && eslint --fix",
-      "cd frontend && prettier --write"
+    "packages/**/*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
     ],
-    "backend/**/*.py": [
+    "packages/**/*.py": [
       "black",
       "flake8"
     ]

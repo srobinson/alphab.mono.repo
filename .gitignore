@@ -78,3 +78,6 @@ Thumbs.db
 .vercel
 .next
 coverage.xml
+
+#Monorepo
+.turbo

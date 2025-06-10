@@ -59,6 +59,30 @@ fi
 
 echo -e "${GREEN}✓ Frontend dependencies installed${NC}"
 
+# Set up auth-frontend package
+echo -e "\n${BLUE}Setting up auth-frontend package...${NC}"
+cd packages/auth-frontend
+if [ ! -d "node_modules" ]; then
+  echo "Installing auth-frontend dependencies..."
+  pnpm install
+  echo -e "${GREEN}✓ auth-frontend dependencies installed${NC}"
+else
+  echo -e "${GREEN}✓ auth-frontend dependencies already installed${NC}"
+fi
+cd ../..
+
+# Set up particle0-frontend package
+echo -e "\n${BLUE}Setting up particle0-frontend package...${NC}"
+cd packages/particle0-frontend
+if [ ! -d "node_modules" ]; then
+  echo "Installing particle0-frontend dependencies..."
+  pnpm install
+  echo -e "${GREEN}✓ particle0-frontend dependencies installed${NC}"
+else
+  echo -e "${GREEN}✓ particle0-frontend dependencies already installed${NC}"
+fi
+cd ../..
+
 # Create frontend .env.local file with Logto config if it doesn't exist
 if [ ! -f "frontend/.env.local" ]; then
   echo -e "\n${BLUE}Creating frontend .env.local file...${NC}"
@@ -111,6 +135,61 @@ fi
 
 echo -e "${GREEN}✓ Backend dependencies installed${NC}"
 
+# Set up auth-backend package
+echo -e "\n${BLUE}Setting up auth-backend package...${NC}"
+cd packages/auth-backend
+
+# Create Python virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
+  echo "Creating Python virtual environment for auth-backend..."
+  python -m venv .venv
+  echo -e "${GREEN}✓ Virtual environment created for auth-backend${NC}"
+else
+  echo -e "${GREEN}✓ Virtual environment already exists for auth-backend${NC}"
+fi
+
+# Activate virtual environment
+echo "Activating virtual environment for auth-backend..."
+source .venv/bin/activate
+
+# Install in development mode
+echo "Installing auth-backend package in development mode..."
+pip install -e .
+echo -e "${GREEN}✓ auth-backend installed in development mode${NC}"
+
+# Deactivate virtual environment
+deactivate
+
+cd ../..
+
+# Set up particle0-backend package
+echo -e "\n${BLUE}Setting up particle0-backend package...${NC}"
+cd packages/particle0-backend
+
+# Create Python virtual environment if it doesn't exist
+if [ ! -d ".venv" ]; then
+  echo "Creating Python virtual environment for particle0-backend..."
+  python -m venv .venv
+  echo -e "${GREEN}✓ Virtual environment created for particle0-backend${NC}"
+else
+  echo -e "${GREEN}✓ Virtual environment already exists for particle0-backend${NC}"
+fi
+
+# Activate virtual environment
+echo "Activating virtual environment for particle0-backend..."
+source .venv/bin/activate
+
+# Install dependencies
+echo "Installing particle0-backend dependencies..."
+pip install -e .
+pip install -e ../auth-backend
+echo -e "${GREEN}✓ particle0-backend dependencies installed${NC}"
+
+# Deactivate virtual environment
+deactivate
+
+cd ../..
+
 # Create .env file with Logto config if it doesn't exist
 if [ ! -f ".env" ]; then
   echo "Creating .env file..."
@@ -148,7 +227,11 @@ echo -e "3. Configure redirect URIs to include http://localhost:3000/auth/callba
 echo -e "4. Copy your Logto app credentials to both frontend/.env.local and backend/.env files"
 echo -e "5. In the Logto console, configure your sign-in experience as needed"
 echo -e "\n${BLUE}Starting the Application:${NC}"
-echo -e "  1. Frontend: ${BLUE}pnpm run dev:frontend${NC}"
-echo -e "  2. Backend: ${BLUE}cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000${NC}"
-echo -e "  3. Or both: ${BLUE}pnpm run dev:all${NC} (after activating the backend venv)"
+echo -e "  1. Original Frontend: ${BLUE}pnpm run dev:frontend${NC}"
+echo -e "  2. Original Backend: ${BLUE}cd backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000${NC}"
+echo -e "  3. Or both original: ${BLUE}pnpm run dev:all${NC} (after activating the backend venv)"
+echo -e "\n${BLUE}Starting the New Packages:${NC}"
+echo -e "  1. Particle0 Frontend: ${BLUE}pnpm run dev:particle0-frontend${NC}"
+echo -e "  2. Particle0 Backend: ${BLUE}cd packages/particle0-backend && source .venv/bin/activate && uvicorn app.main:app --reload --port 8000${NC}"
+echo -e "  3. Or both packages: ${BLUE}pnpm run dev:packages${NC} (after activating the particle0-backend venv)"
 echo -e "\nHappy coding! 🚀"
