@@ -181,7 +181,7 @@ tld==0.13.1
 tokentrim==0.1.9
 toml==0.10.2
 tornado==6.5.1
-tqdm==4.66.1
+tqdm==4.66.3
 trafilatura==2.0.0
 typing-inspection==0.4.1
 typing_extensions==4.14.0
