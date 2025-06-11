@@ -13,8 +13,6 @@ A next-generation AI-powered platform with a microservices architecture, featuri
 
 ```
 particle0/
-├── frontend/                  # Original React + TypeScript application
-├── backend/                   # Original Python FastAPI application
 ├── packages/                  # Reusable packages
 │   ├── auth-backend/          # Reusable authentication backend package
 │   ├── auth-frontend/         # Reusable authentication frontend package

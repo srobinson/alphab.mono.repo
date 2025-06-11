@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "// Turbo scripts": "",
+    "install": "turbo install",
     "dev": "turbo dev",
     "dev:all": "concurrently \"pnpm run dev:particle0-backend\" \"pnpm run dev:particle0-frontend\"",
     "dev:particle0-backend": "cd packages/particle0-backend && python uvicorn particle0_backend.main:app --reload --port 8000",

@@ -10,6 +10,7 @@ class LogtoAuthConfig(BaseModel):
     endpoint: str = Field(..., description="Logto endpoint URL")
     app_id: str = Field(..., description="Logto application ID")
     app_secret: str = Field(..., description="Logto application secret")
+    resource: Optional[str] = Field(None, description="The API resource indicator (audience) for JWTs.")
     redirect_uri: str = Field(
         ..., description="Redirect URI for authentication callback"
     )

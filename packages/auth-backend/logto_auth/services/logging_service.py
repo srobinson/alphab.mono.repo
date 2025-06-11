@@ -27,9 +27,7 @@ class LoggingService:
         # Configure logger if not already configured
         if not logger.handlers:
             handler = logging.StreamHandler()
-            formatter = logging.Formatter(
-                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-            )
+            formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
             handler.setFormatter(formatter)
             logger.addHandler(handler)
             logger.setLevel(log_level)
@@ -48,7 +46,7 @@ class LoggingService:
 
         Args:
             request (Request): The request object.
-            event_type (str): The type of event (e.g., "signin", "token_refresh").
+            event_type (str): The type of event (e.g., "signin").
             user_id (Optional[str]): The user ID associated with the event.
             success (bool): Whether the event was successful.
             details (Optional[str]): Additional details about the event.
@@ -77,9 +75,7 @@ class LoggingService:
         else:
             logger.error(log_message)
 
-    def log_error(
-        self, error: Exception, context: Optional[Dict[str, Any]] = None
-    ) -> None:
+    def log_error(self, error: Exception, context: Optional[Dict[str, Any]] = None) -> None:
         """
         Log an error.
 

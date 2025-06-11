@@ -1,6 +1,4 @@
 from datetime import datetime
-from typing import Any, Dict, Optional
-
 from fastapi import Depends, Request
 from logto_auth.exceptions import AuthError, TokenError
 from logto_auth.models import LogtoAuthConfig, TokenData
@@ -109,6 +107,10 @@ async def get_current_user(
     """
     Get the current user from the token.
 
+    This dependency intelligently handles both JWTs and opaque tokens. It checks
+    the token format to decide whether to perform local JWT validation (fast) or
+    call the UserInfo endpoint (slower).
+
     Args:
         request (Request): The request object.
         token_service (TokenService): The token service.
@@ -117,60 +119,50 @@ async def get_current_user(
         TokenData: The token data.
 
     Raises:
-        AuthError: If the user is not authenticated.
+        AuthError: If the user is not authenticated or the token is invalid.
     """
-    # Handle OPTIONS requests
     if request.method == "OPTIONS":
-        raise AuthError(
-            "Not authenticated",
-            status_code=401,
-        )
+        raise AuthError("Not authenticated", status_code=401)
 
-    # Get the Authorization header
     authorization = request.headers.get("Authorization")
     if not authorization:
-        raise AuthError(
-            "Not authenticated",
-            status_code=401,
-        )
+        raise AuthError("Not authenticated", status_code=401)
 
-    # Parse the Authorization header
     try:
         scheme, token = authorization.split()
         if scheme.lower() != "bearer":
-            raise AuthError(
-                "Not authenticated",
-                status_code=401,
-            )
+            raise AuthError("Invalid authorization scheme", status_code=401)
     except ValueError:
-        raise AuthError(
-            "Invalid authorization header",
-            status_code=401,
-        )
+        raise AuthError("Invalid authorization header format", status_code=401)
 
-    # Get user info from token
-    try:
-        user_info = await token_service.get_user_info_from_token(token)
-
-        # Extract user ID from subject claim
-        sub = user_info.get("sub")
-        if not sub:
-            raise AuthError("Invalid token: missing subject", status_code=401)
-
-        # Extract user roles if available
-        roles = user_info.get("roles", [])
-
-        # Get token expiration if available
-        exp = None
-        if "exp" in user_info:
-            exp = datetime.fromtimestamp(user_info["exp"])
-
-        return TokenData(sub=sub, roles=roles, exp=exp)
-    except Exception as e:
-        raise AuthError(
-            str(e),
-            status_code=401,
-        )
+    # Check if the token has the format of a JWT (three parts separated by dots)
+    if len(token.split(".")) == 3:
+        # Token appears to be a JWT, attempt local validation (fast path)
+        try:
+            payload = await token_service.validate_jwt(token)
+            sub = payload.get("sub")
+            if not sub:
+                raise AuthError("Invalid JWT: missing 'sub' claim", status_code=401)
+            roles = payload.get("roles", [])
+            exp = datetime.fromtimestamp(payload["exp"]) if "exp" in payload else None
+            return TokenData(sub=sub, roles=roles, exp=exp)
+        except TokenError as e:
+            # The token looked like a JWT but failed validation
+            raise AuthError(f"Invalid JWT: {e}", status_code=401)
+        except Exception as e:
+            raise AuthError(f"JWT processing error: {e}", status_code=401)
+    else:
+        # Token does not look like a JWT, assume it's opaque and use userinfo endpoint (slower path)
+        try:
+            user_info = await token_service.get_user_info_from_token(token)
+            sub = user_info.get("sub")
+            if not sub:
+                raise AuthError("Invalid token: missing subject in userinfo", status_code=401)
+            roles = user_info.get("roles", [])
+            exp = datetime.fromtimestamp(user_info["exp"]) if "exp" in user_info else None
+            return TokenData(sub=sub, roles=roles, exp=exp)
+        except Exception as e:
+            raise AuthError(f"Opaque token validation failed: {e}", status_code=401)
 
 
 def has_role(required_roles: list[str]):
@@ -185,19 +177,13 @@ def has_role(required_roles: list[str]):
     """
 
     async def role_checker(token_data: TokenData = Depends(get_current_user)):
-        # If no roles are required, allow access
         if not required_roles:
             return token_data
 
-        # Check if user has any of the required roles
-        for role in required_roles:
-            if role in token_data.roles:
-                return token_data
+        user_roles = set(token_data.roles)
+        if not any(role in user_roles for role in required_roles):
+            raise AuthError("Not enough permissions", status_code=403)
 
-        # User doesn't have the required roles
-        raise AuthError(
-            "Not enough permissions",
-            status_code=403,
-        )
+        return token_data
 
     return role_checker

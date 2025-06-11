@@ -1,3 +1,4 @@
+// packages/auth-frontend/src/components/AuthCallbackHandler.tsx
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthProvider";

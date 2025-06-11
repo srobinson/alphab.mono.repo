@@ -1,19 +1,18 @@
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from fastapi.responses import RedirectResponse
-from logto_auth.dependencies import get_auth_service, get_current_user, has_role
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from logto_auth.dependencies import get_auth_service, get_current_user
 from logto_auth.models import TokenData, UserInfo
 from logto_auth.services.auth_service import AuthService
+from logto_auth.utils import has_role
+from starlette import status
 
 router = APIRouter()
 
 
 @router.get("/signin")
-async def signin(
-    request: Request, auth_service: AuthService = Depends(get_auth_service)
-):
+async def signin(request: Request, auth_service: AuthService = Depends(get_auth_service)):
     """
     Initiate the Logto sign-in flow.
 
@@ -48,9 +47,7 @@ async def options_signout():
 
 
 @router.get("/signout")
-async def signout(
-    request: Request, auth_service: AuthService = Depends(get_auth_service)
-):
+async def signout(request: Request, auth_service: AuthService = Depends(get_auth_service)):
     """
     Sign out the current user.
 
@@ -119,6 +116,18 @@ async def protected_route(user: TokenData = Depends(has_role(["admin"]))):
     }
 
 
+@router.get("/test-jwt", response_model=TokenData)
+async def test_jwt_route(user: TokenData = Depends(get_current_user)):
+    """
+    A test route to verify JWT validation.
+
+    This endpoint is protected by the get_current_user dependency. When hit with
+    a valid JWT, it will return the token's claims, confirming that the JWT
+    validation path is working correctly.
+    """
+    return user
+
+
 @router.options("/session")
 async def options_session():
     """
@@ -128,9 +137,7 @@ async def options_session():
 
 
 @router.get("/session")
-async def get_session(
-    request: Request, auth_service: AuthService = Depends(get_auth_service)
-):
+async def get_session(request: Request, auth_service: AuthService = Depends(get_auth_service)):
     """
     Get the current session information.
 
@@ -227,9 +234,7 @@ async def options_validate_token():
 
 
 @router.get("/validate-token")
-async def validate_token(
-    request: Request, auth_service: AuthService = Depends(get_auth_service)
-):
+async def validate_token(request: Request, auth_service: AuthService = Depends(get_auth_service)):
     """
     Validate the current token and return a new one if needed.
 

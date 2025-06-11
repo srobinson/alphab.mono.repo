@@ -291,14 +291,16 @@ export class AuthService {
    * @param provider Authentication provider
    */
   async signIn(redirectUri?: string, provider?: string): Promise<void> {
+    // Save the intended destination to localStorage for the callback handler to use.
+    if (redirectUri) {
+      localStorage.setItem('post_login_redirect', redirectUri);
+    }
+    
     // Build the sign-in URL
     let signInUrl = `${config.apiUrl}/auth/signin`;
 
     // Add query parameters if provided
     const params = new URLSearchParams();
-    if (redirectUri) {
-      params.append('redirectUri', redirectUri);
-    }
     if (provider) {
       params.append('provider', provider);
     }

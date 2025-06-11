@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Union
 
 import httpx
+import httpx
+import jose.exceptions
 from logto_auth.exceptions import ConfigurationError, TokenError
 from logto_auth.models import LogtoAuthConfig, TokenData, TokenResponse
 from logto_auth.services.logging_service import LoggingService
@@ -34,6 +36,7 @@ class TokenService:
         self.config = config
         self.http_client_manager = http_client_manager or HttpClientManager()
         self.logging_service = logging_service or LoggingService()
+        self._jwks_cache: Optional[Dict[str, Any]] = None
 
     async def exchange_code_for_tokens(
         self, code: str, code_verifier: str, redirect_uri: str
@@ -227,3 +230,43 @@ class TokenService:
         except Exception as e:
             self.logging_service.log_error(e)
             raise TokenError(f"Error getting user info: {str(e)}")
+
+    async def validate_jwt(self, token: str) -> Dict[str, Any]:
+        """
+        Validate a JWT access token locally using Logto's JWKS.
+
+        Fetches and caches the JWKS, then decodes and validates the JWT.
+
+        Args:
+            token (str): The JWT access token.
+
+        Returns:
+            Dict[str, Any]: The decoded JWT payload (claims).
+
+        Raises:
+            TokenError: If the token is invalid or validation fails.
+        """
+        try:
+            # Fetch and cache JWKS if not already cached
+            if not self._jwks_cache:
+                client = await self.http_client_manager.get_client()
+                jwks_uri = self.config.jwks_uri or f"{self.config.endpoint}/oidc/jwks"
+                response = await client.get(jwks_uri)
+                response.raise_for_status()  # Raise an exception for bad status codes
+                self._jwks_cache = response.json()
+
+            # Decode and validate the JWT
+            payload = jose.jwt.decode(
+                token,
+                self._jwks_cache,
+                audience=self.config.audience,
+                issuer=self.config.issuer,
+            )
+
+            return payload
+        except jose.exceptions.JWSExpired as e:
+            raise TokenError(f"JWT token has expired: {e}")
+        except jose.exceptions.JWTClaimsError as e:
+            raise TokenError(f"JWT claims validation failed: {e}")
+        except Exception as e:
+            raise TokenError(f"JWT validation failed: {e}")

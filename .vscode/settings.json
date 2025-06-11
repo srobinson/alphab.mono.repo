@@ -64,5 +64,12 @@
   },
   "[ignore]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
-  }
+  },
+  "IDX.aI.enableInlineCompletion": true,
+  "IDX.aI.enableCodebaseIndexing": true,
+  "python.defaultInterpreterPath": "${workspaceFolder}/packages/auth-backend/.venv/bin/python",
+  "python.analysis.extraPaths": [
+    "${workspaceFolder}/packages/auth-backend/.venv/lib/python3.11/site-packages",
+    "${workspaceFolder}/packages/particle0-backend/.venv/lib/python3.11/site-packages"
+  ]
 }
