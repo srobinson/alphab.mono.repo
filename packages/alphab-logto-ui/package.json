@@ -1,0 +1,55 @@
+{
+  "name": "@alphab/logto-ui",
+  "version": "0.1.0",
+  "description": "Reusable Logto authentication components for React applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "bootstrap": "rm -rf node_modules && pnpm install && pnpm run build",
+    "build": "tsc --project tsconfig.app.json",
+    "dev": "tsc --project tsconfig.app.json --watch",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --max-warnings 0",
+    "lint:fix": "eslint src --fix",
+    "preview": "echo \"No preview for library package\"",
+    "test": "jest"
+  },
+  "keywords": [
+    "alphab",
+    "authentication",
+    "logto",
+    "react"
+  ],
+  "author": "Alphab <info@alphab.dev>",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "react-router-dom": ">=6.0.0"
+  },
+  "dependencies": {
+    "@alphab/logging-ui": "workspace:*",
+    "jwt-decode": "^4.0.0",
+    "tailwindcss": ">=3.0.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "@types/react": "^18.3.15",
+    "@types/react-dom": "^18.3.5",
+    "@typescript-eslint/eslint-plugin": "^8.18.0",
+    "@typescript-eslint/parser": "^8.18.0",
+    "eslint": "^9.17.0",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "jest": "^29.7.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.30.0",
+    "ts-jest": "^29.3.4",
+    "typescript": "^5.7.2"
+  }
+}

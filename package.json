@@ -1,28 +1,31 @@
 {
-  "name": "particle0",
+  "name": "@alphab/monorepo",
   "version": "0.1.0",
-  "description": "Alphab Molecule/Vault POC - Monorepo for AI-powered platform",
+  "description": "Alphab Monorepo - Multi-project workspace with shared packages",
   "private": true,
   "workspaces": [
     "packages/*"
   ],
   "scripts": {
     "// Turbo scripts": "",
-    "install": "turbo install",
+    "// bootstrap": "turbo run bootstrap && turbo run init",
+    "bootstrap": "turbo run bootstrap",
+    "init": "turbo run init",
+    "setup": "turbo run setup",
     "dev": "turbo dev",
-    "dev:all": "concurrently \"pnpm run dev:particle0-backend\" \"pnpm run dev:particle0-frontend\"",
-    "dev:particle0-backend": "cd packages/particle0-backend && python uvicorn particle0_backend.main:app --reload --port 8000",
-    "dev:particle0-frontend": "cd packages/particle0-frontend && pnpm run dev",
+    "dev:all": "concurrently \"pnpm run dev:particle0\" \"pnpm run dev:particle0-ui\"",
+    "dev:particle0": "cd packages/particle0 && python uvicorn particle0.main:app --reload --port 8000",
+    "dev:particle0-ui": "cd packages/particle0-ui && pnpm run dev",
     "build": "turbo build",
     "lint": "turbo lint",
     "format": "turbo format",
     "test": "turbo test",
     "// Package-specific scripts": "",
-    "format:auth-backend": "cd packages/auth-backend && black .",
-    "format:particle0-backend": "cd packages/particle0-backend && black .",
-    "test:auth-backend": "cd packages/auth-backend && python -m pytest",
-    "test:auth-frontend": "cd packages/auth-frontend && pnpm run test",
-    "prepare": "husky install"
+    "format:particle0": "cd packages/particle0 && black .",
+    "prepare": "husky install",
+    "format:alphab-logto": "cd packages/alphab-logto && black .",
+    "test:alphab-logto": "cd packages/alphab-logto && python -m pytest",
+    "test:alphab-logto-ui": "cd packages/alphab-logto-ui && pnpm run test"
   },
   "engines": {
     "node": ">=18.0.0",

@@ -1,6 +1,10 @@
 # pnpm-workspace.yaml
 packages:
-  - packages/auth-backend
-  - packages/auth-frontend
-  - packages/particle0-backend
-  - packages/particle0-frontend
+  - packages/alphab-http-client
+  - packages/alphab-http-client-ui
+  - packages/alphab-logging
+  - packages/alphab-logging-ui
+  - packages/alphab-logto
+  - packages/alphab-logto-ui
+  - packages/particle0
+  - packages/particle0-ui

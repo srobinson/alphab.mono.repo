@@ -1,0 +1,18 @@
+{
+  "name": "@alphab/http-client",
+  "version": "0.1.0",
+  "description": "Simple, elegant HTTP client for Python with connection pooling and async support",
+  "private": true,
+  "scripts": {
+    "bootstrap": "rm -rf .venv poetry.lock && python -m venv .venv && source .venv/bin/activate && poetry lock && poetry install",
+    "build": "poetry build",
+    "lint": "flake8 . --count --show-source --statistics",
+    "format": "black .",
+    "test": "python -m pytest"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}
