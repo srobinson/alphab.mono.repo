@@ -1,9 +1,9 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { AuthService } from '../services/authService';
-import type { AuthContextType, User } from '../types';
-import { createLogger } from '@alphab/logging-ui';
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { AuthService } from "../services/authService";
+import type { AuthContextType, User } from "../types";
+import { createLogger } from "@alphab/logging-ui";
 
-const logger = createLogger('AuthProvider');
+const logger = createLogger("AuthProvider");
 
 // Create a context for the auth state
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,8 +33,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       try {
         // Check for token in URL (from callback)
         const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        const refreshToken = urlParams.get('refresh_token');
+        const token = urlParams.get("token");
+        const refreshToken = urlParams.get("refresh_token");
 
         if (token) {
           // Handle the callback with token
@@ -42,9 +42,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
           // Clean up the URL
           const url = new URL(window.location.href);
-          url.searchParams.delete('token');
+          url.searchParams.delete("token");
           if (refreshToken) {
-            url.searchParams.delete('refresh_token');
+            url.searchParams.delete("refresh_token");
           }
           window.history.replaceState({}, document.title, url.toString());
         }
@@ -67,7 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setRoles(currentUser?.roles || []);
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
-        logger.error('Error initializing auth', error);
+        logger.error("Error initializing auth", error);
         setError(error);
         // We can't directly access clearStorage, but we can set these states
         setUser(null);
@@ -92,7 +92,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setRoles(currentUser?.roles || []);
     };
 
-    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener("storage", handleStorageChange);
 
     // Check auth state when the page becomes visible
     const handleVisibilityChange = () => {
@@ -108,11 +108,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener("storage", handleStorageChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [authClient]);
 
@@ -124,7 +124,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Note: signIn will redirect, so we won't reach this point
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      logger.error('Sign-in error', error);
+      logger.error("Sign-in error", error);
       setError(error);
       setIsLoading(false);
     }
@@ -138,7 +138,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       // Note: signOut will redirect, so we won't reach this point
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      logger.error('Sign-out error', error);
+      logger.error("Sign-out error", error);
       setError(error);
       setUser(null);
       setIsAuthenticated(false);
@@ -160,7 +160,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setRoles(currentUser?.roles || []);
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      logger.error('Refresh user error', error);
+      logger.error("Refresh user error", error);
       setError(error);
     } finally {
       setIsLoading(false);
@@ -187,7 +187,7 @@ export function useAuth() {
   const context = useContext(AuthContext);
 
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
 
   return context;

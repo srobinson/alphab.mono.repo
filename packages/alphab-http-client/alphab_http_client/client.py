@@ -5,7 +5,7 @@ Provides a clean interface for making HTTP requests with proper resource managem
 timeouts, and error handling.
 """
 
-from typing import Any, Dict, Optional, Union
+from typing import Any
 
 import httpx
 from httpx import URL
@@ -34,11 +34,11 @@ class HttpClient:
 
     def __init__(
         self,
-        base_url: Optional[Union[URL, str]] = None,
+        base_url: URL | str | None = None,
         timeout: float = 10.0,
         max_keepalive_connections: int = 5,
         max_connections: int = 10,
-        headers: Optional[Dict[str, str]] = None,
+        headers: dict[str, str] | None = None,
     ):
         """
         Initialize HTTP client.
@@ -84,9 +84,9 @@ class HttpClient:
         *,
         json: Any = None,
         data: Any = None,
-        params: Optional[Dict[str, Any]] = None,
-        headers: Optional[Dict[str, str]] = None,
-        timeout: Optional[float] = None,
+        params: dict[str, Any] | None = None,
+        headers: dict[str, str] | None = None,
+        timeout: float | None = None,
         **kwargs,
     ) -> httpx.Response:
         """
@@ -178,11 +178,11 @@ class HttpClient:
 
 # Convenience function for creating a client
 def create_client(
-    base_url: Optional[Union[URL, str]] = None,
+    base_url: URL | str | None = None,
     timeout: float = 10.0,
     max_keepalive_connections: int = 5,
     max_connections: int = 10,
-    headers: Optional[Dict[str, str]] = None,
+    headers: dict[str, str] | None = None,
 ) -> HttpClient:
     """
     Create an HTTP client with the specified configuration.

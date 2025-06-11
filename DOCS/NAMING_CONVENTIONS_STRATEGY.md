@@ -19,7 +19,7 @@ Current Structure:
 ├── packages/
 │   ├── auth-backend/           # kebab-case
 │   ├── auth-frontend/          # kebab-case
-│   ├── particle0-backend/      # kebab-case with number
+│   ├── particle0-api/      # kebab-case with number
 │   └── particle0-frontend/     # kebab-case with number
 
 Issues:
@@ -34,14 +34,14 @@ Issues:
 ```python
 # Backend packages use different patterns:
 packages/auth-backend/logto_auth/          # snake_case (correct for Python)
-packages/particle0-backend/particle0_backend/  # snake_case but redundant naming
+packages/particle0-api/particle0_backend/  # snake_case but redundant naming
 ```
 
 #### Source Directory Inconsistencies
 
 ```
 auth-backend/logto_auth/           # Direct module
-particle0-backend/particle0_backend/  # Direct module
+particle0-api/particle0_backend/  # Direct module
 auth-frontend/src/                 # Has src/ directory
 particle0-frontend/src/            # Has src/ directory
 ```
@@ -55,7 +55,7 @@ particle0-frontend/src/            # Has src/ directory
 ```
 @alphab/auth-logto-backend
 @alphab/logto-ui
-@alphab/particle0-backend
+@alphab/particle0-api
 @alphab/particle0-frontend
 @alphab/shared-types
 @alphab/shared-utils
@@ -109,7 +109,7 @@ packages/
 
 ```
 packages/
-├── particle0-backend/
+├── particle0-api/
 │   ├── pyproject.toml
 │   ├── alphab_particle0/          # Main module
 │   │   ├── __init__.py
@@ -145,7 +145,7 @@ shared-types: # Shared TypeScript types
 shared-utils: # Shared utilities
 
 # Application Packages
-particle0-backend: # Particle0 application backend
+particle0-api: # Particle0 application backend
 particle0-frontend: # Particle0 application frontend
 analytics-backend: # Future analytics application backend
 analytics-frontend: # Future analytics application frontend
@@ -253,7 +253,7 @@ export function ProtectedRoute(): JSX.Element {}
 # Current → New
 packages/auth-backend/           → packages/auth-logto-backend/
 packages/auth-frontend/          → packages/auth-logto-frontend/
-packages/particle0-backend/      → packages/particle0-backend/ (keep)
+packages/particle0-api/      → packages/particle0-api/ (keep)
 packages/particle0-frontend/     → packages/particle0-frontend/ (keep)
 ```
 
@@ -263,7 +263,7 @@ packages/particle0-frontend/     → packages/particle0-frontend/ (keep)
 # Inside auth-logto-backend/
 logto_auth/                      → alphab_logto/
 
-# Inside particle0-backend/
+# Inside particle0-api/
 particle0_backend/               → alphab_particle0/
 ```
 
@@ -430,7 +430,7 @@ import { AuthService } from "@alphab/logto-ui";
 
 # Applications
 @alphab/particle0-frontend
-@alphab/particle0-backend
+@alphab/particle0-api
 @alphab/analytics-frontend
 @alphab/analytics-backend
 @alphab/admin-frontend

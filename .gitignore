@@ -51,6 +51,7 @@ htmlcov/
 
 # VSCode
 .vscode/*
+!.vscode/cspell.json
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json

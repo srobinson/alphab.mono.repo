@@ -4,7 +4,6 @@ Custom logging formatters for the alphab logging package.
 
 import json
 import logging
-from typing import Any, Dict
 
 
 class JSONFormatter(logging.Formatter):

@@ -1,10 +1,7 @@
 # pnpm-workspace.yaml
 packages:
-  - packages/alphab-http-client
-  - packages/alphab-http-client-ui
-  - packages/alphab-logging
-  - packages/alphab-logging-ui
-  - packages/alphab-logto
-  - packages/alphab-logto-ui
-  - packages/particle0
-  - packages/particle0-ui
+  # Applications
+  - apps/*
+
+  # Shared packages/libraries
+  - packages/*

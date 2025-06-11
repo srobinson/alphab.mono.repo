@@ -67,9 +67,12 @@
   },
   "IDX.aI.enableInlineCompletion": true,
   "IDX.aI.enableCodebaseIndexing": true,
-  "python.defaultInterpreterPath": "${workspaceFolder}/packages/particle0-backend/.venv/bin/python",
+  "python.defaultInterpreterPath": "${workspaceFolder}/packages/particle0-api/.venv/bin/python",
   "python.analysis.extraPaths": [
-    "${workspaceFolder}/packages/particle0-backend/.venv/lib/python3.11/site-packages",
+    "${workspaceFolder}/packages/particle0-api/.venv/lib/python3.11/site-packages",
     "${workspaceFolder}/packages/auth-backend/.venv/lib/python3.11/site-packages"
-  ]
+  ],
+  "[properties]": {
+    "editor.defaultFormatter": "foxundermoon.shell-format"
+  }
 }

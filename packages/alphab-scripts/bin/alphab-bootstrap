@@ -1,0 +1,65 @@
+#!/usr/bin/env node
+import { createLogger } from "../../alphab-logging-ui/src/index";
+
+const PackageDetector = require("../lib/utils/package-detector");
+const TypeScriptAppBuilder = require("../lib/builders/typescript-app");
+const TypeScriptLibraryBuilder = require("../lib/builders/typescript-library");
+const PythonAppBuilder = require("../lib/builders/python-app");
+const PythonLibraryBuilder = require("../lib/builders/python-library");
+const ConfigPackageBuilder = require("../lib/builders/config-package");
+
+const createLogger = require("../../alphab-logging-ui/src/index").createLogger;
+const logger = createLogger("alphab-bootstrap");
+
+async function main() {
+  try {
+    const detector = new PackageDetector(process.cwd());
+    const packageType = detector.getPackageType();
+
+    // Parse command line arguments
+    const args = process.argv.slice(2);
+    const withDev = args.includes("--with-dev");
+
+    let builder;
+
+    switch (packageType) {
+      case "root-package":
+        return;
+      case "typescript-app":
+        logger.log("🔥 Bootstrapping typescript app");
+        builder = new TypeScriptAppBuilder(detector);
+        break;
+      case "typescript-library":
+        logger.log("🔥 Bootstrapping typescript library");
+        builder = new TypeScriptLibraryBuilder(detector);
+        break;
+      case "python-app":
+        logger.log("🔥 Bootstrapping python app");
+        builder = new PythonAppBuilder(detector);
+        break;
+      case "python-library":
+        logger.log("🔥 Bootstrapping python library");
+        builder = new PythonLibraryBuilder(detector);
+        break;
+      case "config-package":
+        logger.log("🔥 Bootstrapping config package");
+        builder = new ConfigPackageBuilder(detector);
+        break;
+      default:
+        logger.error(`❌ Unknown package type: ${packageType}`);
+        process.exit(1);
+    }
+
+    if (typeof builder.bootstrap === "function") {
+      await builder.bootstrap({ withDev });
+    } else {
+      logger.log(`⚠️  Bootstrap not supported for package type: ${packageType}`);
+      process.exit(0);
+    }
+  } catch (error) {
+    logger.error(`❌ Bootstrap failed: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+main();

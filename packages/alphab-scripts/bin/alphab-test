@@ -1,0 +1,51 @@
+#!/usr/bin/env node
+
+const PackageDetector = require("../lib/utils/package-detector");
+const TypeScriptLibraryBuilder = require("../lib/builders/typescript-library");
+const TypeScriptAppBuilder = require("../lib/builders/typescript-app");
+const PythonLibraryBuilder = require("../lib/builders/python-library");
+const PythonAppBuilder = require("../lib/builders/python-app");
+const ConfigPackageBuilder = require("../lib/builders/config-package");
+
+const createLogger = require("../../alphab-logging-ui/src/index").createLogger;
+const logger = createLogger("alphab-test");
+
+async function main() {
+  try {
+    const detector = new PackageDetector();
+    const packageType = detector.getPackageType();
+    const packageName = detector.getPackageName();
+
+    logger.log(`🧪 Testing ${packageName} (${packageType})`);
+
+    let builder;
+    switch (packageType) {
+      case "typescript-library":
+        builder = new TypeScriptLibraryBuilder(detector);
+        break;
+      case "typescript-app":
+        builder = new TypeScriptAppBuilder(detector);
+        break;
+      case "python-library":
+        builder = new PythonLibraryBuilder(detector);
+        break;
+      case "python-app":
+        builder = new PythonAppBuilder(detector);
+        break;
+      case "config-package":
+        builder = new ConfigPackageBuilder(detector);
+        break;
+      default:
+        logger.error(`❌ Unknown package type: ${packageType}`);
+        process.exit(1);
+    }
+
+    await builder.test();
+    logger.log(`🎉 Tests passed for ${packageName}`);
+  } catch (error) {
+    logger.error(`💥 Tests failed: ${error.message}`);
+    process.exit(1);
+  }
+}
+
+main();

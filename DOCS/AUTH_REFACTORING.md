@@ -31,7 +31,7 @@ alphab/
 ├── packages/
 │   ├── auth-backend/          # Reusable Python auth package
 │   ├── auth-frontend/         # Reusable React auth package
-│   ├── particle0-backend/     # Renamed from backend/
+│   ├── particle0-api/     # Renamed from backend/
 │   ├── particle0-frontend/    # Renamed from frontend/
 │   └── other-apps/            # Future applications
 ├── apps/
@@ -733,7 +733,7 @@ This restructured monorepo with reusable packages will make it much easier for A
 While the initial focus of this refactoring is on the authentication system, the ultimate goal is to migrate the entire codebase to a packages-based structure. This involves:
 
 1. **Moving all frontend code**: Migrating from `frontend/` to `packages/particle0-frontend/`
-2. **Moving all backend code**: Migrating from `backend/` to `packages/particle0-backend/`
+2. **Moving all backend code**: Migrating from `backend/` to `packages/particle0-api/`
 
 ### Migration Process
 
@@ -754,7 +754,7 @@ alphab/
 ├── packages/
 │   ├── auth-backend/          # Reusable Python auth package
 │   ├── auth-frontend/         # Reusable React auth package
-│   ├── particle0-backend/     # Main backend application
+│   ├── particle0-api/     # Main backend application
 │   ├── particle0-frontend/    # Main frontend application
 │   └── other-apps/            # Future applications
 ├── docs/                      # Documentation

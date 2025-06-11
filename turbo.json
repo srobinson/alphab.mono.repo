@@ -1,39 +1,65 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
+  "globalDependencies": [
+    "**/.env*",
+    "tsconfig*.json",
+    "eslint.config.*",
+    "vite.config.*",
+    "pyproject.toml"
+  ],
   "tasks": {
     "bootstrap": {
-      "dependsOn": [],
-      "outputs": [],
-      "cache": false,
-      "env": ["NODE_ENV"]
+      "inputs": ["package.json", "pnpm-lock.yaml", "pyproject.toml", "poetry.lock"],
+      "outputs": ["node_modules/**", "dist/**", ".venv/**"],
+      "cache": true,
+      "dependsOn": ["^bootstrap"]
     },
-    "init": {
-      "dependsOn": ["^bootstrap"],
-      "outputs": []
-    },
+
     "build": {
-      "dependsOn": ["^bootstrap"],
-      "outputs": ["dist/**", ".next/**", "build/**"],
+      "dependsOn": ["bootstrap", "^bootstrap", "^build"],
+      "inputs": ["src/**", "tsconfig*.json", "vite.config.*"],
+      "outputs": ["dist/**", "build/**"],
       "cache": true
-    },
-    "lint": {
-      "dependsOn": ["^bootstrap"],
-      "outputs": []
     },
     "dev": {
       "dependsOn": ["^bootstrap"],
       "cache": false,
       "persistent": true
     },
+    "lint": {
+      "dependsOn": ["^bootstrap"],
+      "inputs": ["src/**", "eslint.config.*"],
+      "cache": true
+    },
+    "lint:fix": {
+      "dependsOn": ["^bootstrap"],
+      "inputs": ["src/**", "eslint.config.*"],
+      "cache": false
+    },
     "test": {
       "dependsOn": ["^bootstrap"],
+      "inputs": ["src/**", "test/**", "tests/**", "vitest.config.*"],
       "outputs": ["coverage/**"],
-      "inputs": ["src/**/*.tsx", "src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"]
+      "cache": true
     },
-    "format": {
+    "test:coverage": {
       "dependsOn": ["^bootstrap"],
-      "outputs": []
+      "inputs": ["src/**", "test/**", "tests/**", "vitest.config.*"],
+      "outputs": ["coverage/**", "htmlcov/**"],
+      "cache": true
+    },
+    "test:watch": {
+      "dependsOn": ["^bootstrap"],
+      "cache": false,
+      "persistent": true
+    },
+    "type-check": {
+      "dependsOn": ["^bootstrap"],
+      "inputs": ["src/**", "tsconfig*.json"],
+      "cache": true
+    },
+    "clean": {
+      "cache": false
     }
   }
 }

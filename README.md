@@ -16,7 +16,7 @@ particle0/
 ├── packages/                  # Reusable packages
 │   ├── auth-backend/          # Reusable authentication backend package
 │   ├── auth-frontend/         # Reusable authentication frontend package
-│   ├── particle0-backend/     # Migrated backend using auth-backend
+│   ├── particle0-api/     # Migrated backend using auth-backend
 │   └── particle0-frontend/    # Migrated frontend using auth-frontend
 ├── .vscode/                   # VSCode workspace settings
 ├── .github/                   # GitHub Actions workflows
@@ -81,7 +81,7 @@ particle0/
 
    # Or for the new backend package
    # cd ..
-   # pnpm run dev:particle0-backend
+   # pnpm run dev:particle0-api
    ```
 
    The backend API will be available at:
@@ -177,11 +177,11 @@ A reusable authentication package for React applications using Logto as the auth
 
 [View auth-frontend documentation](packages/auth-frontend/README.md)
 
-### particle0-backend
+### particle0-api
 
 The backend service for the Particle0 application, built with FastAPI and using the `auth-backend` package.
 
-[View particle0-backend documentation](packages/particle0-backend/README.md)
+[View particle0-api documentation](packages/particle0-api/README.md)
 
 ### particle0-frontend
 
@@ -227,7 +227,7 @@ particle0/
 ├── packages/                  # All code lives here
 │   ├── auth-backend/          # Reusable authentication backend package
 │   ├── auth-frontend/         # Reusable authentication frontend package
-│   ├── particle0-backend/     # Main backend application
+│   ├── particle0-api/     # Main backend application
 │   └── particle0-frontend/    # Main frontend application
 ├── DOCS/                      # Project documentation
 └── ... (configuration files)
@@ -236,3 +236,20 @@ particle0/
 ## License
 
 [License information]
+
+## Test specific packages
+
+pnpm run test --filter="@alphab/logging\*"
+
+# Test by type
+
+pnpm run test --filter="_-ui"
+pnpm run test --filter="!_-ui"
+
+# Test specific apps
+
+pnpm run test --filter="@alphab.project/particle0\*"
+
+# Bootstrap with dev dependencies for Python packages
+
+pnpm run bootstrap:dev --filter="@alphab/logging" --filter="@alphab/http-client"

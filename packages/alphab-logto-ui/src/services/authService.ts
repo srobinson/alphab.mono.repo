@@ -1,20 +1,24 @@
-import type { AuthConfig, User } from '../types';
-import { createLogger } from '@alphab/logging-ui';
+import type { AuthConfig, User } from "../types";
+import { createLogger } from "@alphab/logging-ui";
 
 // Simple logger for authentication service
-const logger = createLogger('AuthService');
+const logger = createLogger("AuthService");
 
 const config: AuthConfig = {
-  apiUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1',
+  apiUrl: import.meta.env.VITE_API_URL || "http://localhost:8000/api/v1",
 };
 
 /**
  * Custom error class for authentication errors
  */
 export class AuthError extends Error {
-  constructor(message: string, public code: string) {
+  constructor(
+    message: string,
+    public code: string
+  ) {
     super(message);
-    this.name = 'AuthError';
+    this.name = "AuthError";
+    this.code = code;
   }
 }
 
@@ -41,20 +45,20 @@ export class AuthService {
   private loadFromStorage() {
     try {
       // Load user from storage
-      const userJson = localStorage.getItem('logto_user');
+      const userJson = localStorage.getItem("logto_user");
       if (userJson) {
         this.user = JSON.parse(userJson);
       }
 
       // Load auth status from storage
-      const authStatus = localStorage.getItem('logto_auth_status');
-      this.isAuthenticated = authStatus === 'true';
+      const authStatus = localStorage.getItem("logto_auth_status");
+      this.isAuthenticated = authStatus === "true";
 
       // Load tokens from storage
-      this.accessToken = localStorage.getItem('logto_token');
-      this.refreshToken = localStorage.getItem('logto_refresh_token');
+      this.accessToken = localStorage.getItem("logto_token");
+      this.refreshToken = localStorage.getItem("logto_refresh_token");
     } catch (error) {
-      logger.error('Error loading auth state from storage', error);
+      logger.error("Error loading auth state from storage", error);
       this.clearStorage();
     }
   }
@@ -66,31 +70,31 @@ export class AuthService {
     try {
       // Save user to storage
       if (this.user) {
-        localStorage.setItem('logto_user', JSON.stringify(this.user));
+        localStorage.setItem("logto_user", JSON.stringify(this.user));
       } else {
-        localStorage.removeItem('logto_user');
+        localStorage.removeItem("logto_user");
       }
 
       // Save auth status to storage
-      localStorage.setItem('logto_auth_status', String(this.isAuthenticated));
+      localStorage.setItem("logto_auth_status", String(this.isAuthenticated));
 
       // Save tokens to storage
       if (this.accessToken) {
-        localStorage.setItem('logto_token', this.accessToken);
+        localStorage.setItem("logto_token", this.accessToken);
       } else {
-        localStorage.removeItem('logto_token');
+        localStorage.removeItem("logto_token");
       }
 
       if (this.refreshToken) {
-        localStorage.setItem('logto_refresh_token', this.refreshToken);
+        localStorage.setItem("logto_refresh_token", this.refreshToken);
       } else {
-        localStorage.removeItem('logto_refresh_token');
+        localStorage.removeItem("logto_refresh_token");
       }
 
       // Dispatch storage event for cross-tab synchronization
-      window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new Event("storage"));
     } catch (error) {
-      logger.error('Error saving auth state to storage', error);
+      logger.error("Error saving auth state to storage", error);
     }
   }
 
@@ -98,10 +102,10 @@ export class AuthService {
    * Clear authentication state from storage
    */
   private clearStorage() {
-    localStorage.removeItem('logto_user');
-    localStorage.removeItem('logto_auth_status');
-    localStorage.removeItem('logto_token');
-    localStorage.removeItem('logto_refresh_token');
+    localStorage.removeItem("logto_user");
+    localStorage.removeItem("logto_auth_status");
+    localStorage.removeItem("logto_token");
+    localStorage.removeItem("logto_refresh_token");
     this.user = null;
     this.isAuthenticated = false;
     this.accessToken = null;
@@ -143,7 +147,7 @@ export class AuthService {
 
     try {
       // Split the token into parts
-      const parts = this.accessToken.split('.');
+      const parts = this.accessToken.split(".");
       if (parts.length !== 3 || !parts[1]) {
         // Not a valid JWT token
         return true;
@@ -158,7 +162,7 @@ export class AuthService {
       // Check if the token is expired
       return payload.exp * 1000 < Date.now();
     } catch (error) {
-      logger.error('Error checking token expiration', error);
+      logger.error("Error checking token expiration", error);
       return true;
     }
   }
@@ -169,30 +173,30 @@ export class AuthService {
    */
   async refreshAccessToken(): Promise<boolean> {
     if (!this.accessToken) {
-      logger.error('Cannot refresh token: No access token available');
+      logger.error("Cannot refresh token: No access token available");
       return false;
     }
 
     if (!this.refreshToken) {
-      logger.error('Cannot refresh token: No refresh token available');
+      logger.error("Cannot refresh token: No refresh token available");
       return false;
     }
 
     try {
-      logger.info('Refreshing token with refresh token');
+      logger.info("Refreshing token with refresh token");
 
       const headers: Record<string, string> = {
         Authorization: `Bearer ${this.accessToken}`,
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        'X-Refresh-Token': this.refreshToken,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "X-Refresh-Token": this.refreshToken,
       };
 
       const response = await fetch(`${config.apiUrl}/auth/refresh`, {
-        method: 'GET',
+        method: "GET",
         headers,
-        credentials: 'include',
-        mode: 'cors',
+        credentials: "include",
+        mode: "cors",
       });
 
       if (!response.ok) {
@@ -207,14 +211,14 @@ export class AuthService {
         this.refreshToken = data.refresh_token;
       }
 
-      logger.info('Token refreshed successfully');
+      logger.info("Token refreshed successfully");
 
       this.isAuthenticated = true;
       this.saveToStorage();
 
       return true;
     } catch (error) {
-      logger.error('Error refreshing token', error);
+      logger.error("Error refreshing token", error);
       return false;
     }
   }
@@ -245,19 +249,19 @@ export class AuthService {
     try {
       // Call the backend's session endpoint
       const response = await fetch(`${config.apiUrl}/auth/session`, {
-        method: 'GET',
+        method: "GET",
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        credentials: 'include',
-        mode: 'cors',
+        credentials: "include",
+        mode: "cors",
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        logger.error('Failed to get session info', { status: response.status, error: errorText });
+        logger.error("Failed to get session info", { status: response.status, error: errorText });
         throw new Error(`Failed to get session info: ${response.status}`);
       }
 
@@ -284,7 +288,7 @@ export class AuthService {
       this.isAuthenticated = true;
       this.saveToStorage();
     } catch (error) {
-      logger.error('Error refreshing user', error);
+      logger.error("Error refreshing user", error);
       // If we can't get user info, clear the auth state
       this.clearStorage();
     }
@@ -298,7 +302,7 @@ export class AuthService {
   async signIn(redirectUri?: string, provider?: string): Promise<void> {
     // Save the intended destination to localStorage for the callback handler to use.
     if (redirectUri) {
-      localStorage.setItem('post_login_redirect', redirectUri);
+      localStorage.setItem("post_login_redirect", redirectUri);
     }
 
     // Build the sign-in URL
@@ -307,7 +311,7 @@ export class AuthService {
     // Add query parameters if provided
     const params = new URLSearchParams();
     if (provider) {
-      params.append('provider', provider);
+      params.append("provider", provider);
     }
 
     const queryString = params.toString();
@@ -330,10 +334,10 @@ export class AuthService {
       // Redirect to the signout URL
       window.location.href = `${config.apiUrl}/auth/signout`;
     } catch (error) {
-      logger.error('Error during sign-out', error);
+      logger.error("Error during sign-out", error);
       // If there's an error, still clear the auth state and redirect
       this.clearStorage();
-      window.location.href = '/';
+      window.location.href = "/";
     }
   }
 
@@ -362,15 +366,15 @@ export class AuthService {
       const response = await fetch(`${config.apiUrl}/auth/validate-token`, {
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json',
-          Accept: 'application/json',
+          "Content-Type": "application/json",
+          Accept: "application/json",
         },
-        credentials: 'include',
-        mode: 'cors',
+        credentials: "include",
+        mode: "cors",
       });
 
       if (!response.ok) {
-        logger.error('Token validation failed', { status: response.status });
+        logger.error("Token validation failed", { status: response.status });
         return false;
       }
 
@@ -378,14 +382,14 @@ export class AuthService {
 
       // If token is valid but needs renewal
       if (data.valid && data.renew && data.token) {
-        logger.info('Token is valid but needs renewal, updating token');
+        logger.info("Token is valid but needs renewal, updating token");
         this.accessToken = data.token;
         this.saveToStorage();
       }
 
       return data.valid;
     } catch (error) {
-      logger.error('Error validating token', error);
+      logger.error("Error validating token", error);
       return false;
     }
   }
@@ -398,7 +402,7 @@ export class AuthService {
    */
   async fetchWithAuth(url: string, options: RequestInit = {}): Promise<Response> {
     if (!this.isAuthenticated || !this.accessToken) {
-      throw new AuthError('User is not authenticated', 'not_authenticated');
+      throw new AuthError("User is not authenticated", "not_authenticated");
     }
 
     // Use server-side token validation instead of client-side expiration check
@@ -407,28 +411,28 @@ export class AuthService {
     if (!isValid) {
       // If token is invalid and we have a refresh token, try to refresh
       if (this.refreshToken) {
-        logger.info('Token is invalid, attempting to refresh');
+        logger.info("Token is invalid, attempting to refresh");
         const refreshed = await this.refreshAccessToken();
         if (!refreshed) {
-          logger.warn('Failed to refresh token, will try to use existing token anyway');
+          logger.warn("Failed to refresh token, will try to use existing token anyway");
         }
       } else {
-        logger.warn('Token is invalid but no refresh token available. Will try to use it anyway.');
+        logger.warn("Token is invalid but no refresh token available. Will try to use it anyway.");
       }
     }
 
     // Add the Authorization header
     const headers = new Headers(options.headers);
-    headers.set('Authorization', `Bearer ${this.accessToken}`);
-    headers.set('Content-Type', 'application/json');
-    headers.set('Accept', 'application/json');
+    headers.set("Authorization", `Bearer ${this.accessToken}`);
+    headers.set("Content-Type", "application/json");
+    headers.set("Accept", "application/json");
 
     // Return the fetch promise
     return fetch(`${config.apiUrl}${url}`, {
       ...options,
       headers,
-      credentials: 'include',
-      mode: 'cors',
+      credentials: "include",
+      mode: "cors",
     });
   }
 }

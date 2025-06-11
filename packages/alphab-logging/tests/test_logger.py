@@ -2,7 +2,6 @@
 Tests for the alphab_logging package.
 """
 
-from pathlib import Path
 
 import pytest
 from alphab_logging import (

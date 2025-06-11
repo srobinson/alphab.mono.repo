@@ -1,0 +1,291 @@
+---
+description: High level overview of this repository
+globs: **/*
+alwaysApply: true
+---
+
+
+
+# High Level Overview of the Repository
+
+This repository houses a full-stack application, "Particle0," built with a modern tech stack. The architecture is based on a monorepo structure, which contains both frontend and backend components, along with reusable authentication packages. The frontend is developed using React and TypeScript, while the backend utilizes Python with the FastAPI framework. Authentication is managed through Logto, an identity and access management (IAM) solution. The project is designed for deployment on Vercel, leveraging its serverless functions and CI/CD capabilities.
+
+# Technologies Used
+
+*   **Frontend:**
+    *   React
+    *   TypeScript
+    *   Tailwind CSS
+    *   Vite
+    *   React Router
+    *   React Context API
+    *   Lucide React
+    *   Radix UI
+    *   Framer Motion
+*   **Backend:**
+    *   Python
+    *   FastAPI
+    *   Logto (Authentication Provider)
+    *   Pydantic
+    *   httpx
+    *   pytest
+*   **Other:**
+    *   pnpm (Package Manager)
+    *   GitHub Actions (CI/CD)
+    *   Vercel (Deployment Platform)
+
+# Top Level Folders Structure
+
+*   **.cursor/:** This directory contains rules and guidelines for AI-assisted development workflows, including files for defining development flows, insights, and rules.
+    *   **rules/:** Contains markdown files that define rules for the AI assistant.
+        *   **devplan\_flow.mdc:** Describes the general development workflow.
+        *   **devplan\_insights.mdc:** Outlines a framework for capturing insights.
+        *   **devplan\_rules.mdc:** Provides guidelines for creating and maintaining rules.
+*   **.github/:** Contains the configuration files for GitHub Actions workflows.
+    *   **workflows/:** Defines the CI/CD pipelines.
+        *   **ci.yml:** Defines the continuous integration workflow, including linting and testing.
+        *   **deploy.yml:** Defines the deployment workflow to Vercel.
+*   **backend/:** Contains the Python FastAPI backend application.
+    *   **app/:** Contains the core application logic.
+        *   **api/:** Defines the API endpoints.
+            *   **v1/:** Contains the API version 1 endpoints.
+                *   **endpoints/:** Contains the specific endpoint implementations (e.g., auth, example, health).
+                *   **api.py:** Defines the API router.
+            *   **api.py:** Defines the API router.
+        *   **core/:** Contains core application components.
+            *   **auth.py:** Contains authentication-related logic.
+            *   **config.py:** Contains application settings.
+        *   **models/:** Defines data models.
+        *   **schemas/:** Defines Pydantic schemas for data validation.
+        *   **main.py:** The entry point of the FastAPI application.
+    *   **tests/:** Contains backend tests.
+    *   **.env.example:** Example environment variables file.
+    *   **pyproject.toml:** Python project configuration file.
+    *   **README.md:** Backend README file.
+    *   **requirements-lock.txt:** Locked dependencies.
+    *   **requirements.txt:** Python dependencies.
+*   **DOCS/:** Contains project documentation.
+    *   **ARCHITECTURE.md:** Provides an architectural overview.
+    *   **AUTH\_REFACTORING.md:** Outlines the authentication refactoring strategy.
+    *   **AUTH.md:** Provides documentation for the authentication system.
+    *   **AUTHENTICATION.md:** Provides documentation for the authentication system.
+    *   **DEVELOPMENT.md:** Provides development guidelines.
+    *   **feature\_generation\_plan.md:** Outlines the feature generation plan.
+    *   **IMPROVEMENTS.md:** Describes potential improvements.
+    *   **INIT\_PROJECT\_POC\_Prompt.md:** Contains the POC development environment prompt.
+    *   **MIGRATION\_GUIDE.md:** Provides a guide for migrating to the packages structure.
+    *   **mvp\_user\_stories.md:** Contains the MVP user stories.
+    *   **POC.md:** Contains the POC API and architecture plan.
+    *   **TESTING\_STRATEGY.md:** Outlines the testing strategy.
+*   **frontend/:** Contains the React frontend application.
+    *   **public/:** Contains static assets.
+        *   **\_redirects:** Configuration for Vercel redirects.
+    *   **src/:** Contains the source code.
+        *   **components/:** Contains reusable UI components.
+            *   **ui/:** Contains UI components.
+            *   **auth-callback-handler.tsx:** Handles the authentication callback.
+            *   **auth-status.tsx:** Displays the authentication status.
+            *   **theme-toggle.tsx:** Provides a theme toggle component.
+        *   **contexts/:** Contains React context providers.
+            *   **logto-provider.tsx:** Provides the Logto authentication context.
+            *   **theme-provider.tsx:** Provides the theme context.
+        *   **pages/:** Contains the application pages.
+            *   **profile.tsx:** Displays the user profile.
+        *   **animations.css:** Contains CSS animations.
+        *   **App.tsx:** The main application component.
+        *   **index.css:** Contains global styles.
+        *   **main.tsx:** The application entry point.
+        *   **vite-env.d.ts:** TypeScript definitions for Vite environment variables.
+    *   **.env.example:** Example environment variables file.
+    *   **.gitignore:** Git ignore file.
+    *   **.prettierrc:** Prettier configuration.
+    *   **eslint.config.js:** ESLint configuration.
+    *   **index.html:** The main HTML file.
+    *   **postcss.config.mjs:** PostCSS configuration.
+    *   **README.md:** Frontend README file.
+    *   **tailwind.config.ts:** Tailwind CSS configuration.
+    *   **TAILWIND.md:** Tailwind CSS documentation.
+    *   **vite.config.ts:** Vite configuration.
+*   **packages/:** Contains reusable packages.
+    *   **auth-backend/:** Reusable Python authentication backend package.
+        *   **logto\_auth/:** Contains the core authentication logic.
+            *   **services/:** Contains service classes for authentication.
+            *   **utils/:** Contains utility classes.
+            *   **\_\_init\_\_.py:** Initializes the package.
+            *   **dependencies.py:** Defines dependencies.
+            *   **exceptions.py:** Defines custom exceptions.
+            *   **middleware.py:** Defines middleware.
+            *   **models.py:** Defines data models.
+            *   **routes.py:** Defines the authentication routes.
+        *   **tests/:** Contains tests for the auth-backend package.
+        *   **app.py:** The main application file.
+        *   **pyproject.toml:** Python project configuration file.
+        *   **README.md:** README file for the auth-backend package.
+        *   **turbo-commands.sh:** Turbo commands.
+    *   **auth-frontend/:** Reusable React authentication frontend package.
+        *   **src/:** Contains the source code.
+            *   **components/:** Contains reusable UI components.
+                *   **AuthCallbackHandler.tsx:** Handles the authentication callback.
+                *   **AuthProvider.tsx:** Provides the authentication context.
+            *   **services/:** Contains service classes.
+            *   **types/:** Contains type definitions.
+            *   **index.ts:** Exports the package's public API.
+            *   **vite-env.d.ts:** TypeScript definitions for Vite environment variables.
+        *   **.gitignore:** Git ignore file.
+        *   **.prettierrc:** Prettier configuration.
+        *   **eslint.config.js:** ESLint configuration.
+        *   **index.html:** The main HTML file.
+        *   **postcss.config.mjs:** PostCSS configuration.
+        *   **README.md:** README file for the auth-frontend package.
+        *   **tailwind.config.ts:** Tailwind CSS configuration.
+        *   **vite.config.ts:** Vite configuration.
+    *   **particle0-api/:** The backend service for the Particle0 application.
+        *   **particle0\_backend/:** Contains the core backend logic.
+            *   **api/:** Defines the API endpoints.
+            *   **core/:** Contains core application components.
+            *   **\_\_init\_\_.py:** Initializes the package.
+            *   **main.py:** The entry point of the FastAPI application.
+        *   **.env.example:** Example environment variables file.
+        *   **pyproject.toml:** Python project configuration file.
+        *   **README.md:** README file for the particle0-api package.
+        *   **turbo-commands.sh:** Turbo commands.
+    *   **particle0-frontend/:** The frontend application for the Particle0 platform.
+        *   **public/:** Contains static assets.
+            *   **\_redirects:** Configuration for Vercel redirects.
+        *   **src/:** Contains the source code.
+            *   **components/:** Contains reusable UI components.
+                *   **ui/:** Contains UI components.
+                *   **auth-status.tsx:** Displays the authentication status.
+                *   **theme-toggle.tsx:** Provides a theme toggle component.
+            *   **contexts/:** Contains React context providers.
+                *   **theme-provider.tsx:** Provides the theme context.
+            *   **pages/:** Contains the application pages.
+                *   **profile.tsx:** Displays the user profile.
+            *   **animations.css:** Contains CSS animations.
+            *   **App.tsx:** The main application component.
+            *   **index.css:** Contains global styles.
+            *   **main.tsx:** The application entry point.
+            *   **vite-env.d.ts:** TypeScript definitions for Vite environment variables.
+        *   **.gitignore:** Git ignore file.
+        *   **.prettierrc:** Prettier configuration.
+        *   **eslint.config.js:** ESLint configuration.
+        *   **index.html:** The main HTML file.
+        *   **postcss.config.mjs:** PostCSS configuration.
+        *   **README.md:** Frontend README file.
+        *   **tailwind.config.ts:** Tailwind CSS configuration.
+        *   **TAILWIND.md:** Tailwind CSS documentation.
+        *   **vite.config.ts:** Vite configuration.
+*   **.cursorignore:** Specifies files and directories to ignore for the .cursor directory.
+*   **.editorconfig:** Defines code style guidelines.
+*   **.gitignore:** Specifies files and directories to ignore for Git.
+*   **.nvmrc:** Specifies the Node.js version.
+*   **migrate-to-packages.sh:** A script to migrate the project to a packages structure.
+*   **pnpm-workspace.yaml:** Defines the pnpm workspace.
+*   **README.md:** The main README file for the repository.
+*   **setup.sh:** A script to set up the development environment.
+
+# Code Organization
+
+The code is organized using a monorepo structure, which promotes code reuse and maintainability. The `packages` directory contains reusable components and the main application code. The frontend and backend are separated into distinct directories, with clear separation of concerns. The backend uses a layered architecture with API endpoints, core components, and data models. The frontend uses a component-based architecture with React and TypeScript, and utilizes React Context for state management.
+
+# Notable Patterns
+
+*   **Monorepo:** The use of a monorepo structure allows for better code sharing, dependency management, and streamlined CI/CD processes.
+*   **Microservices Architecture:** The backend is structured in a way that supports a microservices architecture, with clear separation of concerns.
+*   **Component-Based Architecture (Frontend):** The frontend is built using a component-based architecture with React, promoting reusability and maintainability.
+*   **Dependency Injection (Backend):** The backend uses dependency injection to manage dependencies and improve testability.
+*   **Role-Based Access Control (RBAC):** The application implements RBAC to control access to resources based on user roles.
+*   **Authentication as a Service:** The `auth-backend` and `auth-frontend` packages encapsulate authentication logic, making it reusable across different applications.
+*   **Theme System:** The frontend uses a theme system with CSS variables, supporting light and dark modes.
+*   **Asynchronous Processing:** The backend uses asynchronous processing for tasks like content extraction and generation.
+*   **Testing:** The project emphasizes testing with unit, integration, and end-to-end tests.
+
+# Testing Approach
+
+The project employs a comprehensive testing strategy to ensure code quality and reliability.
+
+*   **Backend Testing:**
+    *   **Unit Tests:** Testing individual components and functions.
+    *   **Integration Tests:** Testing the interaction between different components.
+    *   **API Tests:** Testing the API endpoints.
+    *   **Security Tests:** Testing security aspects like token validation and rate limiting.
+    *   **Tools:** pytest, pytest-asyncio, pytest-cov, pytest-mock, httpx, respx.
+*   **Frontend Testing:**
+    *   **Unit Tests:** Testing individual components and utilities.
+    *   **Component Tests:** Testing React components.
+    *   **Integration Tests:** Testing the interaction between components.
+    *   **UI Testing:** Testing component rendering.
+    *   **End-to-End Testing:** Testing the complete authentication flow.
+    *   **Tools:** Jest, React Testing Library, MSW (Mock Service Worker), Cypress.
+*   **Test Coverage:** The project aims for high test coverage, with specific targets for statements, branches, functions, and lines.
+*   **Continuous Integration:** CI workflows are set up to run tests automatically on pull requests and main branch merges.
+
+# Other Important Details
+
+*   **Build Process:**
+    *   Frontend: Uses Vite for building.
+    *   Backend: Uses Poetry for dependency management and building.
+    *   Build commands are defined in the `turbo-commands.sh` script.
+*   **Database Schema:** The repository does not contain a database schema definition.
+*   **Documentation:**
+    *   Comprehensive documentation is provided in the `DOCS/` directory.
+    *   API documentation is auto-generated by FastAPI.
+*   **Deployment:**
+    *   The project is designed for deployment to Vercel.
+    *   Deployment is automated via GitHub Actions.
+*   **Programming Languages:**
+    *   Python is used for the backend.
+    *   TypeScript is used for the frontend.
+*   **Environment Variables:** Environment variables are used for configuration, with example files provided.
+*   **Authentication:** The project uses Logto for authentication, with a focus on secure flows and token management.
+*   **Code Formatting and Linting:** Black, Flake8, and isort are used for code formatting and linting in the backend. ESLint and Prettier are used for the frontend.
+
+# User experience flows
+
+The application appears to be a web application with the following user flows:
+
+*   **Sign-in Flow:**
+    *   **Screens/Pages:**
+        *   Home Page ( `/` )
+        *   Auth Callback Handler ( `/auth/callback` )
+    *   **Elements:**
+        *   Home Page: Sign In button (in AuthStatus component)
+        *   Auth Callback Handler: Loading indicator
+    *   **Steps:**
+        1.  User clicks the "Sign In" button.
+        2.  User is redirected to the Logto sign-in page.
+        3.  User authenticates with Logto.
+        4.  Logto redirects the user back to the `/auth/callback` route with a token.
+        5.  The `AuthCallbackHandler` component processes the token.
+        6.  The user is redirected to the home page.
+*   **Sign-out Flow:**
+    *   **Screens/Pages:**
+        *   Home Page ( `/` )
+    *   **Elements:**
+        *   Home Page: Sign Out button (in AuthStatus component)
+    *   **Steps:**
+        1.  User clicks the "Sign Out" button.
+        2.  The user is redirected to the home page.
+*   **Profile View Flow:**
+    *   **Screens/Pages:**
+        *   Home Page ( `/` )
+        *   Profile Page ( `/profile` )
+    *   **Elements:**
+        *   Home Page: User name/profile link (in AuthStatus component)
+        *   Profile Page: User profile information
+    *   **Steps:**
+        1.  User is signed in.
+        2.  User clicks the profile link.
+        3.  User is redirected to the profile page.
+        4.  The profile page displays the user's profile information.
+*   **Protected Route Access Flow:**
+    *   **Screens/Pages:**
+        *   Profile Page ( `/profile` )
+    *   **Elements:**
+        *   Profile Page: User profile information
+    *   **Steps:**
+        1.  User is signed in.
+        2.  User navigates to a protected route (e.g., `/profile`).
+        3.  The `ProtectedRoute` component checks if the user is authenticated.
+        4.  If authenticated, the user is granted access to the route.
+        5.  If not authenticated, the user is redirected to the login page.

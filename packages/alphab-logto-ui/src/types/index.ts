@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from "react";
 
 /**
  * Authentication configuration
@@ -6,12 +6,6 @@ import type { ReactNode } from 'react';
 export interface AuthConfig {
   /** API base URL */
   apiUrl: string;
-  // /** Logto endpoint URL */
-  // logtoEndpoint: string;
-  // /** Logto application ID */
-  // appId: string;
-  // /** Redirect URI for authentication callback */
-  // redirectUri?: string;
 }
 
 /**
@@ -53,7 +47,7 @@ export interface AuthContextType {
   /** User roles */
   roles: string[];
   /** Sign in function */
-  signIn: (redirectUri?: string, provider?: string) => Promise<void>;
+  signIn: () => Promise<void>;
   /** Sign out function */
   signOut: () => Promise<void>;
   /** Refresh user information */

@@ -16,7 +16,7 @@ This document provides a detailed guide for migrating the Particle0 project from
 The migration involves moving all code from:
 
 - `frontend/` → `packages/particle0-frontend/`
-- `backend/` → `packages/particle0-backend/`
+- `backend/` → `packages/particle0-api/`
 
 And using the reusable packages:
 
@@ -52,7 +52,7 @@ chmod +x migrate-to-packages.sh
 The script will:
 
 1. Copy all files from `frontend/` to `packages/particle0-frontend/`
-2. Copy all files from `backend/` to `packages/particle0-backend/`
+2. Copy all files from `backend/` to `packages/particle0-api/`
 3. Update imports to use the new package structure
 4. Add dependencies on the auth packages
 
@@ -123,42 +123,42 @@ If you prefer to migrate manually or need to customize the migration process, fo
 1. **Copy configuration files**:
 
    ```bash
-   cp backend/*.toml packages/particle0-backend/
-   cp backend/*.txt packages/particle0-backend/
-   cp backend/*.json packages/particle0-backend/
-   cp backend/*.md packages/particle0-backend/
-   cp backend/.env* packages/particle0-backend/
+   cp backend/*.toml packages/particle0-api/
+   cp backend/*.txt packages/particle0-api/
+   cp backend/*.json packages/particle0-api/
+   cp backend/*.md packages/particle0-api/
+   cp backend/.env* packages/particle0-api/
    ```
 
 2. **Copy app files**:
 
    ```bash
-   cp -r backend/app/__init__.py packages/particle0-backend/app/
-   cp -r backend/app/core packages/particle0-backend/app/
+   cp -r backend/app/__init__.py packages/particle0-api/app/
+   cp -r backend/app/core packages/particle0-api/app/
    ```
 
 3. **Copy API endpoints**:
 
    ```bash
-   cp backend/app/api/__init__.py packages/particle0-backend/app/api/
-   cp backend/app/api/v1/__init__.py packages/particle0-backend/app/api/v1/
-   cp backend/app/api/v1/endpoints/__init__.py packages/particle0-backend/app/api/v1/endpoints/
-   cp backend/app/api/v1/endpoints/example.py packages/particle0-backend/app/api/v1/endpoints/
-   cp backend/app/api/v1/endpoints/health.py packages/particle0-backend/app/api/v1/endpoints/
+   cp backend/app/api/__init__.py packages/particle0-api/app/api/
+   cp backend/app/api/v1/__init__.py packages/particle0-api/app/api/v1/
+   cp backend/app/api/v1/endpoints/__init__.py packages/particle0-api/app/api/v1/endpoints/
+   cp backend/app/api/v1/endpoints/example.py packages/particle0-api/app/api/v1/endpoints/
+   cp backend/app/api/v1/endpoints/health.py packages/particle0-api/app/api/v1/endpoints/
    ```
 
 4. **Copy models and schemas**:
 
    ```bash
-   cp -r backend/app/models/* packages/particle0-backend/app/models/
-   cp -r backend/app/schemas/* packages/particle0-backend/app/schemas/
+   cp -r backend/app/models/* packages/particle0-api/app/models/
+   cp -r backend/app/schemas/* packages/particle0-api/app/schemas/
    ```
 
 5. **Copy tests**:
 
    ```bash
-   cp -r backend/app/tests/* packages/particle0-backend/app/tests/
-   cp -r backend/tests/* packages/particle0-backend/tests/
+   cp -r backend/app/tests/* packages/particle0-api/app/tests/
+   cp -r backend/tests/* packages/particle0-api/tests/
    ```
 
 6. **Update pyproject.toml**:

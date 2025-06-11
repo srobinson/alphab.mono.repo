@@ -2,28 +2,23 @@
   "name": "@alphab/http-client-ui",
   "version": "0.1.0",
   "description": "Simple, elegant HTTP client for TypeScript/JavaScript frontends",
-  "type": "module",
   "main": "dist/index.js",
-  "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
   "files": [
     "dist",
     "README.md"
   ],
   "scripts": {
-    "bootstrap": "rm -rf node_modules && pnpm install && pnpm run build",
-    "build": "tsc --project tsconfig.app.json",
-    "dev": "tsc --project tsconfig.app.json --watch",
-    "clean": "rm -rf dist",
-    "test": "vitest",
-    "lint": "eslint src --max-warnings 0",
-    "lint:fix": "eslint src --fix",
+    "clean": "alphab-clean",
+    "bootstrap": "alphab-bootstrap",
+    "build": "alphab-build",
+    "dev": "alphab-dev",
+    "test": "alphab-test",
+    "test:coverage": "alphab-test-coverage",
+    "lint": "alphab-lint",
+    "lint:fix": "alphab-format",
+    "format": "alphab-format",
+    "type-check": "alphab-type-check",
     "preview": "echo \"No preview for library package\""
   },
   "keywords": [
@@ -37,12 +32,12 @@
   "author": "Alphab <info@alphab.dev>",
   "license": "MIT",
   "devDependencies": {
+    "@alphab/eslint-config": "workspace:*",
+    "@alphab/scripts": "workspace:*",
     "@types/node": "^22.10.2",
-    "typescript": "^5.7.2",
-    "vitest": "^2.1.8",
-    "@typescript-eslint/eslint-plugin": "^8.18.1",
-    "@typescript-eslint/parser": "^8.18.1",
-    "eslint": "^9.18.0"
+    "eslint": "^9.28.0",
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.3"
   },
   "publishConfig": {
     "access": "public"

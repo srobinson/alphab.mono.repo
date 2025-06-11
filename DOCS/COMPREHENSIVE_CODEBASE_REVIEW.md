@@ -668,14 +668,14 @@ jobs:
   "version": 2,
   "builds": [
     {
-      "src": "packages/particle0-backend/particle0_backend/main.py",
+      "src": "packages/particle0-api/particle0_backend/main.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "packages/particle0-backend/particle0_backend/main.py"
+      "dest": "packages/particle0-api/particle0_backend/main.py"
     }
   ],
   "env": {
@@ -684,7 +684,7 @@ jobs:
     "LOGTO_APP_SECRET": "@logto-app-secret"
   },
   "functions": {
-    "packages/particle0-backend/particle0_backend/main.py": {
+    "packages/particle0-api/particle0_backend/main.py": {
       "maxDuration": 30
     }
   }

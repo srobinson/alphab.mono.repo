@@ -25,6 +25,5 @@
     "forceConsistentCasingInFileNames": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.app.json" }]
+  "include": ["src"]
 }
