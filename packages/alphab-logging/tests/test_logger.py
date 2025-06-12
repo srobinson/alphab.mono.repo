@@ -2,7 +2,6 @@
 Tests for the alphab_logging package.
 """
 
-
 import pytest
 from alphab_logging import (
     AlphabLogger,

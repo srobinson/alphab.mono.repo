@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 from .logger import LogFormat, LogLevel
 
 
+# TODO: add a config file for the logging package
 @dataclass
 class LogConfig:
     """Configuration for a single logger."""

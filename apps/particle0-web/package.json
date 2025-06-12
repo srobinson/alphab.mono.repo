@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@alphab/scripts": "workspace:*",
+    "@alphab/typescript-config": "workspace:*",
     "@eslint/js": "^9.28.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",

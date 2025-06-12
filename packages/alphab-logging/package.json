@@ -7,6 +7,7 @@
     "clean": "alphab-clean",
     "bootstrap": "alphab-bootstrap",
     "build": "alphab-build",
+    "dev": "alphab-dev",
     "lint": "alphab-lint",
     "lint:fix": "alphab-format",
     "format": "alphab-format",

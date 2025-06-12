@@ -3,6 +3,17 @@
   "version": "0.0.0",
   "private": true,
   "license": "MIT",
+  "exports": {
+    "./base": "./base.json",
+    "./library": "./library.json",
+    "./library-dev": "./library-dev.json",
+    "./react-library": "./react-library.json",
+    "./react-app": "./react-app.json",
+    "./vite": "./vite.json",
+    "./vite-app": "./vite-app.json",
+    "./nextjs": "./nextjs.json",
+    "./remix": "./remix.json"
+  },
   "publishConfig": {
     "access": "public"
   }

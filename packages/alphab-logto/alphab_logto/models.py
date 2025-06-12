@@ -11,21 +11,13 @@ class LogtoAuthConfig(BaseModel):
     app_id: str = Field(..., description="Logto application ID")
     app_secret: str = Field(..., description="Logto application secret")
     resource: Optional[str] = Field(None, description="The API resource indicator (audience) for JWTs.")
-    redirect_uri: str = Field(
-        ..., description="Redirect URI for authentication callback"
-    )
+    redirect_uri: str = Field(..., description="Redirect URI for authentication callback")
     jwt_secret_key: str = Field(..., description="Secret key for JWT signing")
     jwt_algorithm: str = Field("HS256", description="Algorithm for JWT signing")
-    access_token_expire_minutes: int = Field(
-        30, description="Access token expiration time in minutes"
-    )
+    access_token_expire_minutes: int = Field(30, description="Access token expiration time in minutes")
     cors_origins: List[str] = Field([], description="Allowed CORS origins")
-    rate_limit_requests_per_minute: int = Field(
-        60, description="Maximum requests per minute for rate limiting"
-    )
-    enable_rate_limiting: bool = Field(
-        True, description="Whether to enable rate limiting"
-    )
+    rate_limit_requests_per_minute: int = Field(60, description="Maximum requests per minute for rate limiting")
+    enable_rate_limiting: bool = Field(True, description="Whether to enable rate limiting")
 
     # Derived fields
     token_endpoint: Optional[str] = Field(None, description="Logto token endpoint")
@@ -89,14 +81,10 @@ class UserInfo(BaseModel):
     picture: Optional[str] = Field(None, description="URL to user's profile picture")
     roles: List[str] = Field([], description="User roles")
     username: Optional[str] = Field(None, description="User's username")
-    email_verified: Optional[bool] = Field(
-        None, description="Whether the email is verified"
-    )
+    email_verified: Optional[bool] = Field(None, description="Whether the email is verified")
     created_at: Optional[int] = Field(None, description="User creation timestamp")
     updated_at: Optional[int] = Field(None, description="User update timestamp")
-    custom_claims: Optional[Dict[str, Any]] = Field(
-        None, description="Custom user claims"
-    )
+    custom_claims: Optional[Dict[str, Any]] = Field(None, description="Custom user claims")
 
     class Config:
         """Pydantic model configuration."""

@@ -14,7 +14,6 @@
       "cache": true,
       "dependsOn": ["^bootstrap"]
     },
-
     "build": {
       "dependsOn": ["bootstrap", "^bootstrap", "^build"],
       "inputs": ["src/**", "tsconfig*.json", "vite.config.*"],

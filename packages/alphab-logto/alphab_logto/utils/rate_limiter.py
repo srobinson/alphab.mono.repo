@@ -35,9 +35,7 @@ class RateLimiter:
         minute_ago = now - 60
 
         # Remove requests older than 1 minute
-        self.requests[identifier] = [
-            t for t in self.requests[identifier] if t > minute_ago
-        ]
+        self.requests[identifier] = [t for t in self.requests[identifier] if t > minute_ago]
 
         # Check if the number of requests in the last minute exceeds the limit
         if len(self.requests[identifier]) >= self.requests_per_minute:
@@ -61,9 +59,7 @@ class RateLimiter:
         minute_ago = now - 60
 
         # Remove requests older than 1 minute
-        self.requests[identifier] = [
-            t for t in self.requests[identifier] if t > minute_ago
-        ]
+        self.requests[identifier] = [t for t in self.requests[identifier] if t > minute_ago]
 
         # Calculate remaining requests
         return max(0, self.requests_per_minute - len(self.requests[identifier]))

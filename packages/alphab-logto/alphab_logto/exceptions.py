@@ -80,9 +80,7 @@ class AuthorizationError(AuthError):
             detail (str): The error detail message.
             headers (Optional[Dict[str, str]]): Additional headers to include in the response.
         """
-        super().__init__(
-            detail=detail, status_code=status.HTTP_403_FORBIDDEN, headers=headers
-        )
+        super().__init__(detail=detail, status_code=status.HTTP_403_FORBIDDEN, headers=headers)
 
 
 class RateLimitError(AuthError):

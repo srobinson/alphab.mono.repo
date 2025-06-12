@@ -1,56 +1,7 @@
 #!/usr/bin/env node
 
-const PackageDetector = require("../lib/utils/package-detector");
-const TypeScriptLibraryBuilder = require("../lib/builders/typescript-library");
-const TypeScriptAppBuilder = require("../lib/builders/typescript-app");
-const PythonLibraryBuilder = require("../lib/builders/python-library");
-const PythonAppBuilder = require("../lib/builders/python-app");
-const ConfigPackageBuilder = require("../lib/builders/config-package");
+const { createUniversalCommand } = require("../lib/core/universal-command");
 
-const createLogger = require("../../alphab-logging-ui/src/index").createLogger;
-const logger = createLogger("alphab-clean");
-
-async function main() {
-  try {
-    const detector = new PackageDetector();
-    const packageType = detector.getPackageType();
-    const packageName = detector.getPackageName();
-
-    logger.log(`🧹 Cleaning ${packageName} (${packageType})`);
-
-    let builder;
-    switch (packageType) {
-      case "typescript-library":
-        logger.log("🧹 Cleaning typescript library");
-        builder = new TypeScriptLibraryBuilder(detector);
-        break;
-      case "typescript-app":
-        logger.log("🧹 Cleaning typescript app");
-        builder = new TypeScriptAppBuilder(detector);
-        break;
-      case "python-library":
-        logger.log("🧹 Cleaning python library");
-        builder = new PythonLibraryBuilder(detector);
-        break;
-      case "python-app":
-        logger.log("🧹 Cleaning python app");
-        builder = new PythonAppBuilder(detector);
-        break;
-      case "config-package":
-        logger.log("🧹 Cleaning config package");
-        builder = new ConfigPackageBuilder(detector);
-        break;
-      default:
-        logger.error(`❌ Unknown package type: ${packageType}`);
-        process.exit(1);
-    }
-
-    await builder.clean();
-    logger.log(`🎉 Cleaning completed for ${packageName}`);
-  } catch (error) {
-    logger.error(`💥 Cleaning failed: ${error.message}`);
-    process.exit(1);
-  }
-}
-
-main();
+// Create and run the clean command
+const cleanCommand = createUniversalCommand("clean");
+cleanCommand();

@@ -1,56 +1,7 @@
 #!/usr/bin/env node
 
-const PackageDetector = require("../lib/utils/package-detector");
-const TypeScriptLibraryBuilder = require("../lib/builders/typescript-library");
-const TypeScriptAppBuilder = require("../lib/builders/typescript-app");
-const PythonLibraryBuilder = require("../lib/builders/python-library");
-const PythonAppBuilder = require("../lib/builders/python-app");
-const ConfigPackageBuilder = require("../lib/builders/config-package");
+const { createUniversalCommand } = require("../lib/core/universal-command");
 
-const createLogger = require("../../alphab-logging-ui/src/index").createLogger;
-const logger = createLogger("alphab-build");
-
-async function main() {
-  try {
-    const detector = new PackageDetector();
-    const packageType = detector.getPackageType();
-    const packageName = detector.getPackageName();
-
-    logger.log(`🔨 Building ${packageName} (${packageType})`);
-
-    let builder;
-    switch (packageType) {
-      case "typescript-library":
-        logger.log("🔨 Building typescript library");
-        builder = new TypeScriptLibraryBuilder(detector);
-        break;
-      case "typescript-app":
-        logger.log("🔨 Building typescript app");
-        builder = new TypeScriptAppBuilder(detector);
-        break;
-      case "python-library":
-        logger.log("🔨 Building python library");
-        builder = new PythonLibraryBuilder(detector);
-        break;
-      case "python-app":
-        logger.log("🔨 Building python app");
-        builder = new PythonAppBuilder(detector);
-        break;
-      case "config-package":
-        logger.log("🔨 Building config package");
-        builder = new ConfigPackageBuilder(detector);
-        break;
-      default:
-        logger.error(`❌ Unknown package type: ${packageType}`);
-        process.exit(1);
-    }
-
-    await builder.build();
-    logger.log(`🎉 Successfully built ${packageName}`);
-  } catch (error) {
-    logger.error(`💥 Build failed: ${error.message}`);
-    process.exit(1);
-  }
-}
-
-main();
+// Create and run the build command
+const buildCommand = createUniversalCommand("build");
+buildCommand();

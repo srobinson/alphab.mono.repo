@@ -42,7 +42,17 @@ particle0/
    cd particle0
    ```
 
-2. **Frontend Setup:**
+2. **Quick Start (Recommended):**
+
+   ```bash
+   # Bootstrap everything automatically
+   pnpm run bootstrap
+
+   # Start development
+   pnpm run dev:packages
+   ```
+
+3. **Manual Setup:**
 
    ```bash
    # From project root
@@ -55,7 +65,7 @@ particle0/
    pnpm run dev:packages
    ```
 
-3. **Backend Setup:**
+4. **Backend Setup:**
 
    ```bash
    cd backend
@@ -89,7 +99,7 @@ particle0/
    - API: http://localhost:8000
    - Interactive documentation: http://localhost:8000/docs
 
-4. **Running both concurrently:**
+5. **Running both concurrently:**
    ```bash
    # From project root after setting up backend venv
    pnpm run dev:all
@@ -103,8 +113,34 @@ particle0/
 - `pnpm run dev:packages` - Run both new frontend and backend packages concurrently
 - `pnpm run lint` - Lint all code
 - `pnpm run format` - Format all code
-- `pnpm run build` - Build all packages
+- `pnpm run build` - Build all packages with smart state detection
 - `pnpm run test` - Test all packages
+- `pnpm run bootstrap` - Bootstrap all packages with automatic dependency installation
+- `pnpm run clean` - Clean build artifacts
+- `pnpm run clean --deep` - Deep clean including pnpm-lock.yaml and node_modules
+
+### Smart Build System
+
+The project now includes an intelligent build system that:
+
+- 🧠 **Detects repository state** and provides helpful suggestions
+- 🔧 **Auto-fixes common issues** like missing dependencies
+- 💡 **Provides actionable advice** when problems are detected
+- 🎯 **Works consistently** across all package types
+
+Example output:
+
+```bash
+🚀 Running build...
+
+🔍 Repository State Issues Detected:
+  ❌ Root pnpm-lock.yaml is missing
+
+💡 Suggestions:
+  💡 Run 'pnpm install' from the root directory
+
+📦 Package: @alphab/logging-ui (typescript-library)
+```
 
 ### Frontend
 
@@ -237,19 +273,48 @@ particle0/
 
 [License information]
 
-## Test specific packages
+## Advanced Usage
 
-pnpm run test --filter="@alphab/logging\*"
+### Test specific packages
 
-# Test by type
+```bash
+pnpm run test --filter="@alphab/logging*"
+```
 
-pnpm run test --filter="_-ui"
-pnpm run test --filter="!_-ui"
+### Test by type
 
-# Test specific apps
+```bash
+# Test UI packages only
+pnpm run test --filter="*-ui"
 
-pnpm run test --filter="@alphab.project/particle0\*"
+# Test non-UI packages
+pnpm run test --filter="!*-ui"
+```
 
-# Bootstrap with dev dependencies for Python packages
+### Test specific apps
 
-pnpm run bootstrap:dev --filter="@alphab/logging" --filter="@alphab/http-client"
+```bash
+pnpm run test --filter="@alphab.project/particle0*"
+```
+
+### Bootstrap with dev dependencies for Python packages
+
+```bash
+pnpm run bootstrap --with-dev --filter="@alphab/logging" --filter="@alphab/http-client"
+```
+
+### Troubleshooting
+
+If you encounter dependency issues:
+
+```bash
+# Deep clean and rebuild everything
+pnpm run clean --deep
+pnpm run bootstrap
+
+# Or for specific packages
+pnpm run clean --filter="@alphab/logging-ui"
+pnpm run bootstrap --filter="@alphab/logging-ui"
+```
+
+The smart build system will automatically detect and suggest fixes for common issues.

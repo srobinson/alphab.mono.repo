@@ -1,0 +1,104 @@
+#!/usr/bin/env node
+
+const fs = require("fs");
+const path = require("path");
+const { spawn } = require("child_process");
+
+// Gracefully handle missing chalk when node_modules is missing
+let chalk;
+try {
+  chalk = require("chalk");
+} catch (error) {
+  // Fallback when chalk is not available
+  chalk = {
+    red: (text) => text,
+    yellow: (text) => text,
+    cyan: (text) => text,
+    gray: (text) => text,
+    green: (text) => text,
+    blue: (text) => text,
+  };
+}
+
+function findMonorepoRoot() {
+  let dir = process.cwd();
+  while (dir !== path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, "pnpm-workspace.yaml"))) {
+      return dir;
+    }
+    dir = path.dirname(dir);
+  }
+  return process.cwd();
+}
+
+function checkTurboAvailability() {
+  const root = findMonorepoRoot();
+  const nodeModulesPath = path.join(root, "node_modules");
+  const turboPath = path.join(nodeModulesPath, ".bin", "turbo");
+  const lockfilePath = path.join(root, "pnpm-lock.yaml");
+
+  return {
+    hasNodeModules: fs.existsSync(nodeModulesPath),
+    hasTurbo: fs.existsSync(turboPath),
+    hasLockfile: fs.existsSync(lockfilePath),
+    root,
+  };
+}
+
+function displayMissingTurboHelp(status) {
+  console.log(chalk.red("\n❌ Turbo is not available"));
+  console.log(chalk.yellow("\n🔍 Repository State:"));
+
+  if (!status.hasLockfile) {
+    console.log("  ❌ pnpm-lock.yaml is missing");
+  } else {
+    console.log("  ✅ pnpm-lock.yaml exists");
+  }
+
+  if (!status.hasNodeModules) {
+    console.log("  ❌ node_modules is missing");
+  } else {
+    console.log("  ✅ node_modules exists");
+  }
+
+  if (!status.hasTurbo) {
+    console.log("  ❌ turbo executable is missing");
+  }
+
+  console.log(chalk.cyan("\n💡 To fix this issue:"));
+  console.log("  1. Run: cd " + status.root);
+  console.log("  2. Run: pnpm install");
+  console.log("  3. Then retry your command");
+
+  console.log(chalk.yellow("\n🤔 This usually happens after running 'clean:deep'"));
+  console.log(chalk.gray("   The clean:deep command removes node_modules, including turbo"));
+}
+
+async function runTurbo(args) {
+  const status = checkTurboAvailability();
+
+  if (!status.hasTurbo) {
+    displayMissingTurboHelp(status);
+    process.exit(1);
+  }
+
+  // Turbo is available, run it
+  const turboPath = path.join(status.root, "node_modules", ".bin", "turbo");
+  const child = spawn(turboPath, args, {
+    stdio: "inherit",
+    cwd: status.root,
+  });
+
+  child.on("close", (code) => {
+    process.exit(code);
+  });
+
+  child.on("error", (error) => {
+    console.error(chalk.red(`Failed to run turbo: ${error.message}`));
+    process.exit(1);
+  });
+}
+
+// Get command line arguments (excluding node and script name)
+const args = process.argv.slice(2);
+runTurbo(args);
