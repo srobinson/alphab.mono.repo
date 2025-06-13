@@ -1,6 +1,5 @@
 import type {
   Migration,
-  MigrationConfig,
   MigrationResult,
   MigrationStatus,
   MigrationStats,
@@ -23,7 +22,7 @@ export enum DBProvider {
  * using specific methods rather than a generic execute approach.
  * Each method has a clear purpose and type-safe return values.
  */
-export interface IMigrationRunner<TProviderConfig = unknown> {
+export interface IMigrationRunner {
   /**
    * Initialize the migration runner with configuration
    */
@@ -160,7 +159,7 @@ export interface IProviderCapabilities {
 /**
  * Extended Migration Runner with Provider Capabilities
  */
-export interface IMigrate<TProviderConfig = unknown> extends IMigrationRunner<TProviderConfig> {
+export interface IMigrate extends IMigrationRunner {
   /**
    * Get provider-specific capabilities
    */

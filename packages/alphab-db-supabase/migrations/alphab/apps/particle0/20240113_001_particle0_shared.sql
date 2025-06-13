@@ -1,27 +1,17 @@
 -- Particle0 App-Specific Shared Schema
 -- Tables and functions specific to particle0 but shared across instances
+-- Using public schema with alphab_ prefix for Supabase compatibility
 
--- Users table for particle0
-CREATE TABLE IF NOT EXISTS alphab.users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email TEXT UNIQUE NOT NULL,
-  full_name TEXT,
-  avatar_url TEXT,
-  created_at TIMESTAMPTZ DEFAULT NOW(),
-  updated_at TIMESTAMPTZ DEFAULT NOW()
-);
+-- Add particle0-specific columns to the global users table
+ALTER TABLE public.alphab_users
+ADD COLUMN IF NOT EXISTS full_name TEXT;
 
--- Enable RLS and audit
-ALTER TABLE alphab.users ENABLE ROW LEVEL SECURITY;
-
--- Add audit trigger
-CREATE TRIGGER users_audit_trigger
-  AFTER INSERT OR UPDATE OR DELETE ON alphab.users
-  FOR EACH ROW EXECUTE FUNCTION alphab.audit_trigger();
-
--- Basic RLS policies
-CREATE POLICY "Users can view own profile" ON alphab.users
+-- Additional RLS policies for particle0 (with alphab_ prefix)
+CREATE POLICY IF NOT EXISTS "alphab_particle0_users_can_view_own_profile" ON public.alphab_users
   FOR SELECT USING (auth.uid() = id);
 
-CREATE POLICY "Users can update own profile" ON alphab.users
+CREATE POLICY IF NOT EXISTS "alphab_particle0_users_can_update_own_profile" ON public.alphab_users
   FOR UPDATE USING (auth.uid() = id);
+
+-- Particle0-specific tables can be added here
+-- Example: CREATE TABLE public.alphab_particle0_specific_table (...);

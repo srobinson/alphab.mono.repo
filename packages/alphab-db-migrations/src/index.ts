@@ -7,14 +7,15 @@
  * - db.migrate.status()
  */
 
-import { readdir, readFile, stat } from "fs/promises";
-import { join, extname } from "path";
+import { readdir, readFile } from "fs/promises";
+import { join } from "path";
 import { existsSync } from "fs";
 import chalk from "chalk";
 
 // Export clear, familiar interfaces with proper file extensions
 export * from "./types.js";
 export * from "./config.js";
+export * from "./interfaces.js";
 
 // Simple migration result types
 export interface MigrationResult {
@@ -39,6 +40,7 @@ export interface MigrationConfig {
   supabaseKey?: string;
   migrationsPath?: string;
   // Add database client for real execution
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   databaseClient?: any; // Will be injected from outside
 }
 
@@ -84,10 +86,11 @@ export class MigrationService {
       await this.ensureMigrationLogTable();
 
       const result = await this.config.databaseClient.sql(
-        "SELECT version, description, applied_at, applied_by FROM alphab.migration_log ORDER BY applied_at",
+        "SELECT version, description, applied_at, applied_by FROM public.alphab_migration_log ORDER BY applied_at",
       );
 
       if (result.success && result.data) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         return result.data.map((row: any) => ({
           version: row.version,
           description: row.description || "",
@@ -111,7 +114,7 @@ export class MigrationService {
 
     try {
       const createTableSQL = `
-        CREATE TABLE IF NOT EXISTS alphab.migration_log (
+        CREATE TABLE IF NOT EXISTS public.alphab_migration_log (
           id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
           version VARCHAR(50) UNIQUE NOT NULL,
           description TEXT,
@@ -135,7 +138,7 @@ export class MigrationService {
 
     try {
       const insertSQL = `
-        INSERT INTO alphab.migration_log (version, description)
+        INSERT INTO public.alphab_migration_log (version, description)
         VALUES ($1, $2)
         ON CONFLICT (version) DO NOTHING;
       `;
@@ -241,7 +244,7 @@ export class MigrationService {
 
           console.log(chalk.green(`  ✅ Found: ${version}_${name} (${source})`));
         } catch (error) {
-          console.warn(chalk.yellow(`  ⚠️  Could not read: ${filename}`));
+          console.warn(chalk.yellow(`  ⚠️  Could not read: ${filename}`), error);
         }
       }
     } catch (error) {
@@ -464,7 +467,7 @@ export class MigrationService {
   async create(name: string): Promise<string> {
     const timestamp = new Date()
       .toISOString()
-      .replace(/[-T:\.Z]/g, "")
+      .replace(/[-T:Z]/g, "")
       .slice(0, 14);
 
     const filename = `${timestamp}_${name.replace(/[^a-zA-Z0-9_]/g, "_")}.sql`;

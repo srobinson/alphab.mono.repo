@@ -5,16 +5,29 @@
   "license": "MIT",
   "exports": {
     "./base": "./base.json",
-    "./library": "./library.json",
-    "./library-dev": "./library-dev.json",
-    "./react-library": "./react-library.json",
-    "./react-app": "./react-app.json",
+    "./node": "./node.json",
     "./vite": "./vite.json",
     "./vite-app": "./vite-app.json",
+    "./vite-library": "./vite-library.json",
     "./nextjs": "./nextjs.json",
     "./remix": "./remix.json"
   },
   "publishConfig": {
     "access": "public"
+  },
+  "files": [
+    "base.json",
+    "library.json",
+    "node.json",
+    "nextjs.json",
+    "react-library.json",
+    "react-app.json",
+    "remix.json",
+    "vite.json",
+    "vite-app.json",
+    "vite-library.json"
+  ],
+  "peerDependencies": {
+    "typescript": "5.8.3"
   }
 }

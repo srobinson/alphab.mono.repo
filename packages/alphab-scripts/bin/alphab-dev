@@ -1,4 +1,5 @@
-#!/usr/bin/env node
+// packages/alphab-scripts/bin/alphab-dev
+// #!/usr/bin/env node
 
 const { createUniversalCommand } = require("../lib/core/universal-command");
 

@@ -13,9 +13,9 @@ import type {
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export interface Database {
-  alphab: {
+  public: {
     Tables: {
-      users: {
+      alphab_users: {
         Row: {
           id: string;
           email: string;
@@ -26,6 +26,11 @@ export interface Database {
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
+          // Additional columns from particle0 and customizations
+          full_name?: string | null;
+          api_key?: string | null;
+          subscription_tier?: string | null;
+          api_rate_limit?: number | null;
         };
         Insert: {
           id?: string;
@@ -37,6 +42,10 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          full_name?: string | null;
+          api_key?: string | null;
+          subscription_tier?: string | null;
+          api_rate_limit?: number | null;
         };
         Update: {
           id?: string;
@@ -48,9 +57,13 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
+          full_name?: string | null;
+          api_key?: string | null;
+          subscription_tier?: string | null;
+          api_rate_limit?: number | null;
         };
       };
-      vaults: {
+      alphab_vaults: {
         Row: {
           id: string;
           name: string;
@@ -82,7 +95,7 @@ export interface Database {
           deleted_at?: string | null;
         };
       };
-      artifacts: {
+      alphab_artifacts: {
         Row: {
           id: string;
           vault_id: string;
@@ -138,7 +151,7 @@ export interface Database {
           deleted_at?: string | null;
         };
       };
-      audit_logs: {
+      alphab_audit_logs: {
         Row: {
           id: string;
           user_id: string | null;
@@ -173,6 +186,55 @@ export interface Database {
           created_at?: string;
         };
       };
+      alphab_migration_log: {
+        Row: {
+          id: string;
+          version: string;
+          description: string | null;
+          applied_at: string;
+          applied_by: string | null;
+          checksum: string | null;
+        };
+        Insert: {
+          id?: string;
+          version: string;
+          description?: string | null;
+          applied_at?: string;
+          applied_by?: string | null;
+          checksum?: string | null;
+        };
+        Update: {
+          id?: string;
+          version?: string;
+          description?: string | null;
+          applied_at?: string;
+          applied_by?: string | null;
+          checksum?: string | null;
+        };
+      };
+      alphab_project_settings: {
+        Row: {
+          id: string;
+          setting_key: string;
+          setting_value: Json;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          setting_key: string;
+          setting_value: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          setting_key?: string;
+          setting_value?: Json;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;
@@ -187,12 +249,12 @@ export interface Database {
 }
 
 // Helper types following Supabase patterns
-export type Tables<T extends keyof Database["alphab"]["Tables"]> =
-  Database["alphab"]["Tables"][T]["Row"];
-export type TablesInsert<T extends keyof Database["alphab"]["Tables"]> =
-  Database["alphab"]["Tables"][T]["Insert"];
-export type TablesUpdate<T extends keyof Database["alphab"]["Tables"]> =
-  Database["alphab"]["Tables"][T]["Update"];
+export type Tables<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Row"];
+export type TablesInsert<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Insert"];
+export type TablesUpdate<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Update"];
 
 // Query result types from Supabase docs
 export type QueryResult<T> = T extends PromiseLike<infer U> ? U : never;
@@ -204,7 +266,7 @@ export interface SupabaseConfig {
   url: string;
   anonKey: string;
   serviceKey?: string;
-  options?: SupabaseClientOptions<"alphab">;
+  options?: SupabaseClientOptions<"public">;
 }
 
 // Client operation options

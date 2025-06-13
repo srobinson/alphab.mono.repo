@@ -1,11 +1,11 @@
 /**
  * Database provider enumeration
  */
-export enum DBProvider {
-  SUPABASE = "supabase",
-  POSTGRES = "postgres",
-  MONGODB = "mongodb",
-}
+// export enum DBProvider {
+//   SUPABASE = "supabase",
+//   POSTGRES = "postgres",
+//   MONGODB = "mongodb",
+// }
 
 // // Local type definitions (since they're not exported from db-migrations)
 // interface MigrationConfig<TProviderConfig = unknown> {

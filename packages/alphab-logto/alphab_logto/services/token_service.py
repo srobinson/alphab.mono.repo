@@ -256,8 +256,6 @@ class TokenService:
             )
 
             return payload
-        except jose.exceptions.JWSExpired as e:
-            raise TokenError(f"JWT token has expired: {e}")
         except jose.exceptions.JWTClaimsError as e:
             raise TokenError(f"JWT claims validation failed: {e}")
         except Exception as e:

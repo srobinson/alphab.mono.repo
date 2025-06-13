@@ -62,7 +62,15 @@ class HttpClient:
         if base_url is not None:
             client_args["base_url"] = base_url
 
-        self._client = httpx.AsyncClient(**client_args)
+        self._client = httpx.AsyncClient(
+            timeout=timeout,
+            limits=httpx.Limits(
+                max_keepalive_connections=max_keepalive_connections,
+                max_connections=max_connections,
+            ),
+            headers=headers or {},
+            base_url=base_url if base_url is not None else "",
+        )
 
     async def __aenter__(self):
         """Context manager entry."""

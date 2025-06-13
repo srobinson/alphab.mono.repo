@@ -2,28 +2,19 @@
  * Services layer - clear interface between CLI and implementations
  * Familiar pattern: CLI → Service → Database
  *
- * NOW WITH REAL POWER! 🚀
+ * REAL POWER! 🚀
  */
 
+import { createClient as createDatabaseClient, createAdminClient } from "@alphab/db-supabase";
+import type { DatabaseClient } from "@alphab/db-supabase";
 import {
-  createClient as createDatabaseClient,
-  createAdminClient,
-  DatabaseClient,
-} from "@alphab/db-supabase";
-import {
+  DBProvider,
   createMigrationService as createRealMigrationService,
-  MigrationService,
   getMigrationConfig,
 } from "@alphab/db-migrations";
+import type { MigrationService } from "@alphab/db-migrations";
 import { getEnvironmentConfig } from "@alphab/env-config";
 import chalk from "chalk";
-
-// Enum for database providers (local copy to avoid import issues)
-enum DBProvider {
-  SUPABASE = "supabase",
-  POSTGRES = "postgres",
-  MONGODB = "mongodb",
-}
 
 /**
  * Enhanced DatabaseClient wrapper with additional CLI-friendly methods
@@ -35,30 +26,34 @@ class EnhancedDatabaseClient {
   async ping(): Promise<boolean> {
     return this.client.ping();
   }
-  async sql(query: string, params?: any[]) {
+  async sql(query: string, params?: unknown[]) {
     return this.client.sql(query, params);
   }
-  get users(): any {
-    return this.client.users;
+  get users() {
+    return this.client.users as unknown as typeof this.client.users;
   }
-  get vaults(): any {
-    return this.client.vaults;
+  get vaults() {
+    return this.client.vaults as unknown as typeof this.client.vaults;
   }
-  get artifacts(): any {
-    return this.client.artifacts;
+  get artifacts() {
+    return this.client.artifacts as unknown as typeof this.client.artifacts;
   }
-  get audit_logs(): any {
-    return this.client.audit_logs;
+  get audit_logs() {
+    return this.client.audit_logs as unknown as typeof this.client.audit_logs;
   }
 
   // Additional CLI-friendly methods
-  async healthCheck(): Promise<{ connected: boolean; version?: string; latency?: number }> {
+  async healthCheck(): Promise<{
+    connected: boolean;
+    version: string | undefined;
+    latency: number | undefined;
+  }> {
     const start = Date.now();
     const connected = await this.ping();
     const latency = Date.now() - start;
 
     if (!connected) {
-      return { connected: false };
+      return { connected: false, version: undefined, latency: undefined };
     }
 
     try {
@@ -69,8 +64,8 @@ class EnhancedDatabaseClient {
         latency,
         version: result.success ? "Supabase PostgreSQL" : undefined,
       };
-    } catch (error) {
-      return { connected: true, latency };
+    } catch (_: unknown) {
+      return { connected: true, latency, version: undefined };
     }
   }
 }
@@ -103,11 +98,15 @@ class EnhancedMigrationService {
     total: number;
     applied: number;
     pending: number;
-    latest?: { version: string; name: string; appliedAt?: Date };
+    latest: { version: string; name: string; appliedAt: Date | undefined } | undefined;
   }> {
     const status = await this.status();
-    const applied = status.filter((m) => m.applied);
-    const pending = status.filter((m) => !m.applied);
+    const applied = status.filter((m: { applied: boolean }) => m.applied);
+    const pending = status.filter((m: { applied: boolean }) => !m.applied);
+    // const latest = applied.sort(
+    //   (a: { appliedAt: Date | undefined }, b: { appliedAt: Date | undefined }) =>
+    //     (b.appliedAt?.getTime() || 0) - (a.appliedAt?.getTime() || 0),
+    // )[0];
     const latest = applied.sort(
       (a, b) => (b.appliedAt?.getTime() || 0) - (a.appliedAt?.getTime() || 0),
     )[0];
@@ -116,7 +115,13 @@ class EnhancedMigrationService {
       total: status.length,
       applied: applied.length,
       pending: pending.length,
-      latest,
+      latest: latest
+        ? {
+            version: latest.version,
+            name: latest.name,
+            appliedAt: latest.appliedAt,
+          }
+        : undefined,
     };
   }
 
@@ -127,8 +132,10 @@ class EnhancedMigrationService {
 
       // Check for gaps in migration sequence
       const applied = status
-        .filter((m) => m.applied)
-        .sort((a, b) => a.version.localeCompare(b.version));
+        .filter((m: { applied: boolean }) => m.applied)
+        .sort((a: { version: string }, b: { version: string }) =>
+          a.version.localeCompare(b.version),
+        );
 
       // Add more sophisticated validation logic here in the future
       if (applied.length === 0) {
@@ -136,60 +143,72 @@ class EnhancedMigrationService {
       }
 
       return { valid: issues.length === 0, issues };
-    } catch (error) {
+    } catch (error: unknown) {
       return { valid: false, issues: [`Validation failed: ${error}`] };
     }
   }
 }
 
 /**
- * Service factory with environment auto-detection
- * NOW USING REAL IMPLEMENTATIONS! 🔥
+ * 🔥 Service factory with environment auto-detection
  */
 export function createDatabaseService(): {
   client: EnhancedDatabaseClient;
   admin: EnhancedDatabaseClient | null;
   migration: EnhancedMigrationService;
 } {
-  console.log(chalk.blue("🔧 Creating database service with real implementations..."));
+  console.log(chalk.blue("🔧 Creating database service..."));
 
   try {
     // Use our world-class env-config!
     const envConfig = getEnvironmentConfig();
 
-    console.log(chalk.gray(`   Supabase URL: ${envConfig.supabase.url || "Not configured"}`));
+    // PREFER environment variables over config file for real deployments
+    const supabaseUrl = process.env.SUPABASE_URL || envConfig.supabase.url;
+    const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || envConfig.supabase.anonKey;
+    const supabaseServiceKey =
+      process.env.SUPABASE_SERVICE_ROLE_KEY || envConfig.supabase.serviceRoleKey;
+
+    console.log(chalk.gray(`   Supabase URL: ${supabaseUrl || "Not configured"}`));
     console.log(chalk.gray(`   Project: ${envConfig.database.projectName}`));
+    console.log(chalk.gray(`   Service Key: ${supabaseServiceKey ? "SET" : "NOT SET"}`));
 
     // Create real Supabase clients
     const clientConfig = {
-      url: envConfig.supabase.url,
-      anonKey: envConfig.supabase.anonKey,
+      url: supabaseUrl,
+      anonKey: supabaseAnonKey,
     };
 
-    const adminConfig = envConfig.supabase.serviceRoleKey
+    const adminConfig = supabaseServiceKey
       ? {
-          url: envConfig.supabase.url,
-          anonKey: envConfig.supabase.anonKey,
-          serviceKey: envConfig.supabase.serviceRoleKey,
+          url: supabaseUrl,
+          anonKey: supabaseAnonKey,
+          serviceKey: supabaseServiceKey,
         }
       : null;
 
-    // Create real migration service with injected database client
-    const databaseClient = new EnhancedDatabaseClient(createDatabaseClient(clientConfig));
+    // Create real migration service with injected ADMIN database client (for SQL execution)
+    const migrationDatabaseClient = adminConfig
+      ? new EnhancedDatabaseClient(createAdminClient(adminConfig)) // Use service role for migrations
+      : new EnhancedDatabaseClient(createDatabaseClient(clientConfig)); // Fallback to anon key
+
     const migrationConfig = {
       ...getMigrationConfig(DBProvider.SUPABASE as any),
-      databaseClient: databaseClient, // Inject real client for SQL execution!
+      databaseClient: migrationDatabaseClient, // Inject admin client for SQL execution!
     };
     const migrationService = createRealMigrationService(migrationConfig);
 
-    console.log(chalk.green("✅ Database service created with real implementations"));
+    // Create regular client for general operations
+    const regularClient = new EnhancedDatabaseClient(createDatabaseClient(clientConfig));
+
+    console.log(chalk.green("✅ Database service created"));
 
     return {
-      client: databaseClient, // Use the same client that was injected into migrations
+      client: regularClient, // Regular client for general operations
       admin: adminConfig ? new EnhancedDatabaseClient(createAdminClient(adminConfig)) : null,
       migration: new EnhancedMigrationService(migrationService),
     };
-  } catch (error) {
+  } catch (error: unknown) {
     console.warn(chalk.yellow(`⚠️  Falling back to development mode: ${error}`));
 
     // Fallback configuration for development

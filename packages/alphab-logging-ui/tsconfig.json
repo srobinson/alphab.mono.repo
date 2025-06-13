@@ -1,7 +1,9 @@
 {
-  "extends": "@alphab/typescript-config/library",
+  "extends": "@alphab/typescript-config/vite-library",
   "compilerOptions": {
-    "noEmit": true
+    "outDir": "dist",
+    "rootDir": "src",
   },
-  "include": ["src", "**/*.test.*", "**/*.spec.*"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

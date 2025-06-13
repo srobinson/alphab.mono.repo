@@ -4,6 +4,9 @@ from typing import Callable, List, Optional
 from alphab_logto.utils.rate_limiter import RateLimiter
 from fastapi import Request, Response
 from starlette.middleware.base import BaseHTTPMiddleware
+from alphab_logging import create_logger
+
+logger = create_logger("alphab_logto.middleware")
 
 
 class RateLimitingMiddleware(BaseHTTPMiddleware):
@@ -121,6 +124,7 @@ class LogtoProtectedAppMiddleware(BaseHTTPMiddleware):
             # In a real implementation, we would verify the token here
             # For simplicity, we'll just check if it exists
             # Attach the token to the request state for later use
+            logger.info("FIXE ME NOWL !!! Logto-ID-Token header found", id_token=id_token)
             request.state.logto_id_token = id_token
             return await call_next(request)
 

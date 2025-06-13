@@ -84,7 +84,7 @@ class TypeScriptAppBuilder {
 
     try {
       // Use the existing lint pattern: eslint . --max-warnings 20
-      await this.runner.run("eslint", [".", "--max-warnings", "20"]);
+      await this.runner.run("eslint", ["src", "--max-warnings", "20"]);
       console.log(chalk.green(`✅ Linting passed for ${this.detector.getPackageName()}`));
     } catch (error) {
       console.error(

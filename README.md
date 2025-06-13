@@ -1,5 +1,9 @@
 # particle0
 
+```
+make beautiful things
+```
+
 A next-generation AI-powered platform with a microservices architecture, featuring a Python FastAPI backend and a React + TypeScript frontend. This monorepo contains the Alphab Molecule/Vault POC implementation.
 
 ## Features

@@ -22,7 +22,7 @@ EXAMPLES = [
 
 
 @router.get("/", response_model=List[ExampleItem])
-async def read_examples():
+async def read_examples() -> List[ExampleItem]:
     """
     Retrieve examples.
     """
@@ -31,7 +31,7 @@ async def read_examples():
 
 
 @router.get("/{example_id}", response_model=ExampleItem)
-async def read_example(example_id: int):
+async def read_example(example_id: int) -> ExampleItem:
     """
     Get a specific example by ID.
     """

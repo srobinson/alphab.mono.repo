@@ -6,7 +6,7 @@ logger = create_logger("particle0.api.v1.endpoints.health")
 
 
 @router.get("/")
-async def health_check():
+async def health_check() -> dict[str, str]:
     """
     Health check endpoint.
     """

@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
+
+from fastapi.responses import RedirectResponse
 
 from alphab_logto.dependencies import get_auth_service, get_current_user, has_role
 from alphab_logto.models import TokenData, UserInfo
@@ -11,7 +13,7 @@ router = APIRouter()
 
 
 @router.get("/signin")
-async def signin(request: Request, auth_service: AuthService = Depends(get_auth_service)):
+async def signin(request: Request, auth_service: AuthService = Depends(get_auth_service)) -> RedirectResponse:
     """
     Initiate the Logto sign-in flow.
 
@@ -27,7 +29,7 @@ async def callback(
     error: Optional[str] = None,
     error_description: Optional[str] = None,
     auth_service: AuthService = Depends(get_auth_service),
-):
+) -> Response:
     """
     Handle the callback from Logto after user authentication.
 
@@ -38,7 +40,7 @@ async def callback(
 
 
 @router.options("/signout")
-async def options_signout():
+async def options_signout() -> dict[str, Any]:
     """
     Handle OPTIONS request for CORS preflight.
     """
@@ -46,7 +48,9 @@ async def options_signout():
 
 
 @router.get("/signout")
-async def signout(request: Request, auth_service: AuthService = Depends(get_auth_service)):
+async def signout(
+    request: Request, auth_service: AuthService = Depends(get_auth_service)
+) -> Response:
     """
     Sign out the current user.
 
@@ -61,7 +65,7 @@ async def refresh_token(
     response: Response,
     user: TokenData = Depends(get_current_user),
     auth_service: AuthService = Depends(get_auth_service),
-):
+) -> dict[str, Any]:
     """
     Refresh the access token.
 
@@ -81,7 +85,7 @@ async def refresh_token(
 
 
 @router.options("/me")
-async def options_user_info():
+async def options_user_info() -> dict[str, Any]:
     """
     Handle OPTIONS request for CORS preflight.
     """
@@ -93,7 +97,7 @@ async def get_user_info(
     request: Request,
     user: TokenData = Depends(get_current_user),
     auth_service: AuthService = Depends(get_auth_service),
-):
+) -> UserInfo:
     """
     Get information about the current user.
 
@@ -103,7 +107,7 @@ async def get_user_info(
 
 
 @router.get("/protected")
-async def protected_route(user: TokenData = Depends(has_role(["admin"]))):
+async def protected_route(user: TokenData = Depends(has_role(["admin"]))) -> dict[str, Any]:
     """
     Example of a protected route that requires the "admin" role.
 
@@ -116,7 +120,7 @@ async def protected_route(user: TokenData = Depends(has_role(["admin"]))):
 
 
 @router.get("/test-jwt", response_model=TokenData)
-async def test_jwt_route(user: TokenData = Depends(get_current_user)):
+async def test_jwt_route(user: TokenData = Depends(get_current_user)) -> TokenData:
     """
     A test route to verify JWT validation.
 
@@ -128,7 +132,7 @@ async def test_jwt_route(user: TokenData = Depends(get_current_user)):
 
 
 @router.options("/session")
-async def options_session():
+async def options_session() -> dict[str, Any]:
     """
     Handle OPTIONS request for CORS preflight.
     """
@@ -136,7 +140,9 @@ async def options_session():
 
 
 @router.get("/session")
-async def get_session(request: Request, auth_service: AuthService = Depends(get_auth_service)):
+async def get_session(
+    request: Request, auth_service: AuthService = Depends(get_auth_service)
+) -> dict[str, Any]:
     """
     Get the current session information.
 
@@ -190,7 +196,7 @@ async def get_session(request: Request, auth_service: AuthService = Depends(get_
 
 
 @router.options("/token")
-async def options_token():
+async def options_token() -> dict[str, Any]:
     """
     Handle OPTIONS request for CORS preflight.
     """
@@ -198,7 +204,7 @@ async def options_token():
 
 
 @router.get("/token")
-async def get_token(request: Request):
+async def get_token(request: Request) -> dict[str, Any]:
     """
     Get the current access token.
 
@@ -225,7 +231,7 @@ async def get_token(request: Request):
 
 
 @router.options("/validate-token")
-async def options_validate_token():
+async def options_validate_token() -> dict[str, Any]:
     """
     Handle OPTIONS request for CORS preflight.
     """
@@ -233,7 +239,9 @@ async def options_validate_token():
 
 
 @router.get("/validate-token")
-async def validate_token(request: Request, auth_service: AuthService = Depends(get_auth_service)):
+async def validate_token(
+    request: Request, auth_service: AuthService = Depends(get_auth_service)
+) -> dict[str, Any]:
     """
     Validate the current token and return a new one if needed.
 

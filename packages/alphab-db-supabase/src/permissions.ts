@@ -355,7 +355,9 @@ export function withPermissionCheck(
   permissionType: string,
 ) {
   return function <T extends (...args: any[]) => Promise<any>>(
+    // @expect-error - Used by TypeScript's decorator metadata
     target: any,
+    // @expect-error - Used by TypeScript's decorator metadata
     propertyKey: string,
     descriptor: TypedPropertyDescriptor<T>,
   ) {

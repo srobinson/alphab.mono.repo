@@ -37,7 +37,7 @@
     "@alphab/typescript-config": "workspace:*",
     "@types/node": "^22.10.2",
     "eslint": "^9.28.0",
-    "typescript": "^5.8.3",
+    "typescript": "5.8.3",
     "vitest": "^3.2.3"
   },
   "publishConfig": {

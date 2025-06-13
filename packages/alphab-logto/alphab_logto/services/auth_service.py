@@ -193,6 +193,7 @@ class AuthService:
             payload = await self.token_service.get_user_info_from_token(token)
             return UserInfo(
                 sub=payload.get("sub", token_data.sub),
+                custom_claims=payload.get("custom_claims", {}),
                 name=payload.get("name"),
                 email=payload.get("email"),
                 picture=payload.get("picture"),
