@@ -1,0 +1,11 @@
+{
+  "extends": "@alphab/typescript-config/library",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": [
+    "src",
+    "**/*.test.*",
+    "**/*.spec.*"
+  ]
+}

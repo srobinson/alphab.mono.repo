@@ -1,3 +1,4 @@
+// eslint-disable indent
 /**
  * @alphab/logging-ui - Simple, elegant logging for TypeScript/JavaScript frontends
  *
@@ -75,11 +76,16 @@ class FrontendLogger {
 
   error(message: string, error?: Error | any, context?: LogContext): void {
     if (this.shouldLog(LogLevel.ERROR)) {
+       
       const errorContext = error
-        ? {
-          error_message: error instanceof Error ? error.message : String(error),
-          error_stack: error instanceof Error ? error.stack : undefined,
-          ...context,
+        ? // eslint-disable-next-line indent
+          {
+          // eslint-disable-next-line indent
+            error_message: error instanceof Error ? error.message : String(error),
+          // eslint-disable-next-line indent
+            error_stack: error instanceof Error ? error.stack : undefined,
+          // eslint-disable-next-line indent
+            ...context,
         }
         : context;
 

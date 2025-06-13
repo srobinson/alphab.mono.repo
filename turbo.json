@@ -7,6 +7,7 @@
     "vite.config.*",
     "pyproject.toml"
   ],
+  "globalEnv": ["NODE_ENV", "CI"],
   "tasks": {
     "bootstrap": {
       "inputs": ["package.json", "pnpm-lock.yaml", "pyproject.toml", "poetry.lock"],
@@ -59,6 +60,35 @@
     },
     "clean": {
       "cache": false
+    },
+    "db:migrate": {
+      "dependsOn": ["^build"],
+      "inputs": ["db/migrations/**", "db/schemas/**"],
+      "env": ["SUPABASE_URL", "SUPABASE_SERVICE_KEY", "DB_POOL_SIZE", "DB_TIMEOUT"],
+      "cache": false
+    },
+    "db:status": {
+      "inputs": ["db/migrations/**"],
+      "env": ["SUPABASE_URL", "SUPABASE_ANON_KEY"],
+      "cache": true
+    },
+    "db:rollback": {
+      "dependsOn": ["^build"],
+      "inputs": ["db/migrations/**"],
+      "env": ["SUPABASE_URL", "SUPABASE_SERVICE_KEY"],
+      "cache": false
+    },
+    "db:seed": {
+      "dependsOn": ["db:migrate"],
+      "inputs": ["db/seeds/**"],
+      "env": ["SUPABASE_URL", "SUPABASE_SERVICE_KEY"],
+      "cache": false
+    },
+    "db:generate": {
+      "dependsOn": ["db:migrate"],
+      "outputs": ["db/types/**"],
+      "env": ["SUPABASE_URL", "SUPABASE_SERVICE_KEY"],
+      "cache": true
     }
   }
 }

@@ -3,6 +3,7 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "rootDir": "src",
+    "outDir": "dist",
     "noEmit": false
   },
   "include": ["src"]

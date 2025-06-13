@@ -1,0 +1,4 @@
+{
+  "extends": "@alphab/typescript-config/vite",
+  "include": ["src", "../alphab-db-migrations/src/config.ts", "../../TMP/_index-old-backup.ts"]
+}

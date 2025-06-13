@@ -11,4 +11,4 @@ export {
   createClient,
   type HttpClientConfig,
   type HttpResponse,
-} from "./client.js";
+} from "./client";

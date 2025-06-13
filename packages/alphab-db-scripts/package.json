@@ -1,0 +1,44 @@
+{
+  "name": "@alphab/db-scripts",
+  "version": "0.1.0",
+  "description": "Database CLI tools for migration, seeding, and type generation",
+  "private": true,
+  "bin": {
+    "db": "./bin/alphab-migrate",
+    "alphab-migrate": "./bin/alphab-migrate"
+  },
+  "files": [
+    "bin/**",
+    "dist/**"
+  ],
+  "scripts": {
+    "build": "alphab-build",
+    "dev": "tsx src/cli/index.ts",
+    "type-check": "tsc --noEmit",
+    "setup-env": "node setup-env.js",
+    "test:cli": "npm run build && ./bin/alphab-migrate help"
+  },
+  "dependencies": {
+    "@alphab/db-migrations": "workspace:*",
+    "@alphab/db-supabase": "workspace:*",
+    "@alphab/env-config": "workspace:*",
+    "chalk": "^4.1.2",
+    "commander": "^12.1.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "@alphab/typescript-config": "workspace:*",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "keywords": [
+    "alphab",
+    "database",
+    "cli",
+    "migration",
+    "scripts"
+  ],
+  "author": "Alphab <info@alphab.dev>",
+  "license": "MIT"
+}

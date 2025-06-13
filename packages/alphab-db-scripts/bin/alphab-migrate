@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+
+// Database CLI - familiar commands like Rails, Laravel, Prisma
+// Usage: db migrate, db rollback, db status, etc.
+
+require("../dist/cli/index.js");
