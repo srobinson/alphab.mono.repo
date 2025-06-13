@@ -86,7 +86,7 @@ def create_application() -> FastAPI:
     application.include_router(auth_routes.router, prefix=settings.API_V1_STR + "/auth")
 
     @application.get("/")
-    async def root():
+    async def root() -> dict[str, str]:
         logger.info("📍 Root endpoint accessed")
         return {"message": "Welcome to Particle0 API"}
 

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any, Callable, Coroutine
 
 from alphab_logto.exceptions import AuthError, TokenError
 from alphab_logto.models import LogtoAuthConfig, TokenData
@@ -10,7 +11,7 @@ from alphab_logto.utils.pkce import PKCEUtils
 from fastapi import Depends, Request
 
 
-def get_config(request: Request) -> LogtoAuthConfig:
+def get_config(request: Request) -> LogtoAuthConfig | Any:
     """
     Get the Logto auth configuration from the request state.
 
@@ -164,7 +165,7 @@ async def get_current_user(request: Request, token_service: TokenService = Depen
             raise AuthError(f"Opaque token validation failed: {e}", status_code=401)
 
 
-def has_role(required_roles: list[str]):
+def has_role(required_roles: list[str]) -> Callable[[TokenData], Coroutine[Any, Any, Any]]:
     """
     Dependency for role-based access control.
 
@@ -175,7 +176,7 @@ def has_role(required_roles: list[str]):
         Callable: The dependency function.
     """
 
-    async def role_checker(token_data: TokenData = Depends(get_current_user)):
+    async def role_checker(token_data: TokenData = Depends(get_current_user)) -> TokenData:
         if not required_roles:
             return token_data
 

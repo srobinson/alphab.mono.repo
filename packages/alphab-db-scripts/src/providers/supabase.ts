@@ -1,9 +1,11 @@
-import { createMigrationService, MigrationService } from "@alphab/db-migrations";
-import type { MigrationConfig, MigrationStatus } from "@alphab/db-migrations";
-import { createClient, DatabaseClient } from "@alphab/db-supabase";
-
+import { createMigrationService } from "@alphab/db-migrations";
+import type { MigrationService, MigrationConfig, MigrationStatus } from "@alphab/db-migrations";
+import { createClient } from "@alphab/db-supabase";
+import type { DatabaseClient } from "@alphab/db-supabase";
 import { AbstractCLIRunner } from "../cli/abstract";
 import chalk from "chalk";
+import { setupEnvironment } from "@alphab/env-config";
+
 /**
  * Supabase CLI Runner - Simple Supabase client implementation
  */
@@ -50,6 +52,8 @@ export class SupabaseCLIRunner extends AbstractCLIRunner {
   }
 
   private async getConfig(): Promise<MigrationConfig> {
+    console.log("SupabaseCLIRunner.getConfig", this.config);
+
     if (!this.config) {
       // For now, create a simple config - we'll improve this later
       this.config = {
@@ -185,9 +189,7 @@ export class SupabaseCLIRunner extends AbstractCLIRunner {
     try {
       console.log(chalk.blue("ℹ️  Setting up Supabase environment..."));
 
-      // Use require for CommonJS compatibility
-      const envConfigSetup = require("@alphab/env-config/setup");
-      await envConfigSetup.setupEnvironment();
+      await setupEnvironment();
 
       console.log(chalk.green("✅ Environment setup completed!"));
     } catch (error) {

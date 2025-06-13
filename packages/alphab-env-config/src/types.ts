@@ -86,6 +86,11 @@ export interface ValidationError {
   required: boolean;
 }
 
+export interface ValidationWarning {
+  variable: string;
+  message: string;
+}
+
 export interface ValidationResult {
   isValid: boolean;
   errors: ValidationError[];

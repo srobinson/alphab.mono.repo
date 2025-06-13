@@ -7,6 +7,6 @@
 
 export * from "./types";
 export * from "./loader";
-
+export { setupEnvironment } from "./setup";
 // Re-export commonly used functions for convenience
 export { getEnvironmentConfig, validateEnvironment } from "./loader";

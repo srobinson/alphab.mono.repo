@@ -13,8 +13,8 @@ class TypeScriptLibraryBuilder {
     console.log(chalk.green(`📦 Building TypeScript library: ${this.detector.getPackageName()}`));
 
     try {
-      // Use the existing build pattern: tsc --project tsconfig.app.json
-      await this.runner.run("tsc", ["--project", "tsconfig.app.json"]);
+      // Use tsconfig.json for libraries
+      await this.runner.run("tsc", ["--project", "tsconfig.json"]);
 
       console.log(chalk.green(`✅ Successfully built ${this.detector.getPackageName()}`));
     } catch (error) {

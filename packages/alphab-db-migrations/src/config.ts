@@ -1,6 +1,11 @@
 import { DBProvider } from "./interfaces.js";
 import type { MigrationConfig } from "./index.js";
-import { getEnvironmentConfig, validateEnvironment } from "@alphab/env-config";
+import {
+  getEnvironmentConfig,
+  validateEnvironment,
+  type ValidationWarning,
+  type ValidationError,
+} from "@alphab/env-config";
 import chalk from "chalk";
 
 /**
@@ -31,7 +36,7 @@ export function getSupabaseMigrationConfig(): MigrationConfig {
     // Show validation warnings but don't fail
     if (validation.warnings.length > 0) {
       console.warn(chalk.yellow("⚠️  Environment warnings:"));
-      validation.warnings.forEach((warning) => {
+      validation.warnings.forEach((warning: ValidationWarning) => {
         console.warn(chalk.yellow(`   ${warning.variable}: ${warning.message}`));
       });
     }
@@ -39,7 +44,7 @@ export function getSupabaseMigrationConfig(): MigrationConfig {
     // Fail on validation errors
     if (!validation.isValid) {
       console.error(chalk.red("❌ Environment validation failed:"));
-      validation.errors.forEach((error) => {
+      validation.errors.forEach((error: ValidationError) => {
         console.error(chalk.red(`   ${error.variable}: ${error.message}`));
       });
       throw new Error("Environment configuration is invalid. Run 'pnpm setup' to fix.");

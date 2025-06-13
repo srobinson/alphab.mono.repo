@@ -6,7 +6,7 @@
 import type { Database } from "./types";
 import type { DatabaseClient } from "./client";
 
-type ArtifactRow = Database["alphab"]["Tables"]["artifacts"]["Row"];
+type ArtifactRow = Database["public"]["Tables"]["alphab_artifacts"]["Row"];
 
 /**
  * Generate embeddings for text content
@@ -59,10 +59,17 @@ export async function searchArtifactsBySimilarity(
   limit: number = 10,
 ): Promise<{ success: boolean; data?: ArtifactRow[]; error?: any }> {
   try {
-    // In production, this would use vector similarity search
-    // For now, just return a simple text search
+    // Generate embedding for the query text
+    const queryEmbedding = await generateEmbedding(queryText);
+
+    // In production, this would use vector similarity search with cosine distance
+    // For now, just return a simple text search but pass the embedding for future use
     const result = await client.artifacts.findMany({
       limit,
+      // Pass the embedding to the query - it will be used when vector search is implemented
+      where: {
+        embedding: queryEmbedding,
+      },
     });
 
     if (!result.success) {

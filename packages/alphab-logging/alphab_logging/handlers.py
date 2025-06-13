@@ -28,7 +28,7 @@ class FileHandler(logging.FileHandler):
 class JSONHandler(logging.Handler):
     """Handler that outputs JSON formatted log records."""
 
-    def __init__(self, stream=None):
+    def __init__(self, stream=None) -> None:
         super().__init__()
         self.stream = stream or sys.stderr
 
@@ -44,7 +44,7 @@ class JSONHandler(logging.Handler):
 class RichHandler(logging.Handler):
     """Handler using Rich for beautiful console output."""
 
-    def __init__(self, console=None, show_time: bool = True, show_path: bool = False):
+    def __init__(self, console=None, show_time: bool = True, show_path: bool = False) -> None:
         super().__init__()
         self.console = console
         self.show_time = show_time

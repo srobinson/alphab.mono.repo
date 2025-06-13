@@ -67,7 +67,7 @@ class ConsoleFormatter(logging.Formatter):
     }
     RESET = "\033[0m"
 
-    def __init__(self, colorize: bool = True, *args, **kwargs):
+    def __init__(self, colorize: bool = True, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.colorize = colorize
 

@@ -3,6 +3,7 @@ Tests for the alphab_logging package.
 """
 
 import pytest
+from pathlib import Path
 from alphab_logging import (
     AlphabLogger,
     LogFormat,
@@ -14,14 +15,14 @@ from alphab_logging import (
 )
 
 
-def test_get_logger():
+def test_get_logger() -> None:
     """Test basic logger creation."""
     logger = get_logger("test")
     assert isinstance(logger, AlphabLogger)
     assert logger.name == "test"
 
 
-def test_logger_methods():
+def test_logger_methods() -> None:
     """Test logger methods exist and can be called."""
     logger = get_logger("test")
 
@@ -33,7 +34,7 @@ def test_logger_methods():
     logger.critical("Critical message")
 
 
-def test_logger_binding():
+def test_logger_binding() -> None:
     """Test logger context binding."""
     logger = get_logger("test")
     bound_logger = logger.bind(request_id="abc123", user_id=456)
@@ -43,7 +44,7 @@ def test_logger_binding():
     bound_logger.info("Test message with context")
 
 
-def test_development_logging_setup():
+def test_development_logging_setup() -> None:
     """Test development logging setup."""
     logger = setup_development_logging()
     assert isinstance(logger, AlphabLogger)
@@ -52,7 +53,7 @@ def test_development_logging_setup():
     logger.debug("Development debug message")
 
 
-def test_production_logging_setup():
+def test_production_logging_setup() -> None:
     """Test production logging setup."""
     logger = setup_production_logging()
     assert isinstance(logger, AlphabLogger)
@@ -61,7 +62,7 @@ def test_production_logging_setup():
     logger.info("Production info message")
 
 
-def test_custom_configuration():
+def test_custom_configuration() -> None:
     """Test custom logger configuration."""
     logger = configure_logging(
         level=LogLevel.WARNING,
@@ -74,7 +75,7 @@ def test_custom_configuration():
     logger.warning("Custom configured warning")
 
 
-def test_log_levels():
+def test_log_levels() -> None:
     """Test log level enumeration."""
     assert LogLevel.DEBUG.value == "DEBUG"
     assert LogLevel.INFO.value == "INFO"
@@ -83,7 +84,7 @@ def test_log_levels():
     assert LogLevel.CRITICAL.value == "CRITICAL"
 
 
-def test_log_formats():
+def test_log_formats() -> None:
     """Test log format enumeration."""
     assert LogFormat.JSON.value == "json"
     assert LogFormat.CONSOLE.value == "console"
@@ -91,7 +92,7 @@ def test_log_formats():
 
 
 @pytest.mark.parametrize("level", [LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARNING])
-def test_different_log_levels(level):
+def test_different_log_levels(level: LogLevel) -> None:
     """Test logging with different levels."""
     logger = configure_logging(level=level)
 
@@ -104,7 +105,7 @@ def test_different_log_levels(level):
 
 
 @pytest.mark.parametrize("format_type", [LogFormat.JSON, LogFormat.CONSOLE, LogFormat.RICH])
-def test_different_formats(format_type):
+def test_different_formats(format_type: LogFormat) -> None:
     """Test logging with different formats."""
     logger = configure_logging(format_type=format_type)
 
@@ -112,7 +113,7 @@ def test_different_formats(format_type):
     logger.info("Test message", test_field="value")
 
 
-def test_file_output_configuration(tmp_path):
+def test_file_output_configuration(tmp_path: Path) -> None:
     """Test file output configuration."""
     log_file = tmp_path / "test.log"
 
