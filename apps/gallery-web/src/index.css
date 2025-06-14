@@ -88,12 +88,11 @@
 
   html,
   body {
-    @apply bg-zed-background text-zed-foreground;
-    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" width="80" height="80"><g fill="%23000000" fill-opacity="0.04"><path d="M0 0h80v80H0zM20 20h40v40H20z"/></g></svg>');
+    /* @apply bg-background text-foreground; */
     height: 100%;
     margin: 0;
     padding: 0;
+    /* background: oklab(0.922857 -0.00287431 0.01724 / 0.2); */
+    background: lavender;
   }
 }
-
-/* Animations and effects are moved to animations.css */
