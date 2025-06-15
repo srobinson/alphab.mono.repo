@@ -75,6 +75,7 @@ export function useImageGallery(): UseImageGalleryReturn {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const pageSize = 50;
+  const [loadedImages, setLoadedImages] = useState<Image[]>([]);
 
   const images = useMemo<Image[]>(() => {
     if (!galleryData?.images?.length) return [];
@@ -84,15 +85,32 @@ export function useImageGallery(): UseImageGalleryReturn {
     }));
   }, [galleryData]);
 
-  const paginatedImages = useMemo<Image[]>(() => {
-    if (!galleryData?.images?.length) return [];
+  // Update loaded images when page changes
+  useEffect(() => {
+    if (!galleryData?.images?.length) return;
+
     const start = (currentPage - 1) * pageSize;
     const end = start + pageSize;
-    return galleryData.images.slice(start, end).map((imageData: GalleryImage) => ({
+    const newImages = galleryData.images.slice(start, end).map((imageData: GalleryImage) => ({
       full: `${FULL_IMAGE_BASE}/${imageData.variants.original.filename}`,
       thumbnail: `${THUMBNAIL_BASE}/${imageData.variants["320"].filename}`,
     }));
+
+    if (currentPage === 1) {
+      setLoadedImages(newImages);
+    } else {
+      setLoadedImages((prev) => [...prev, ...newImages]);
+    }
+
+    // Reset isPaging after images are loaded
+    return () => {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("imagesLoaded"));
+      }
+    };
   }, [galleryData, currentPage]);
+
+  const paginatedImages = loadedImages;
 
   const totalPages = useMemo(
     () => (galleryData ? Math.ceil(galleryData.images.length / pageSize) : 0),

@@ -26,6 +26,7 @@
   "dependencies": {
     "@alphab/logging-ui": "workspace:*",
     "@alphab/logto-ui": "workspace:*",
+    "@tanstack/react-query": "^5.80.7",
     "framer-motion": "^12.18.1",
     "lucide-react": "^0.514.0",
     "react": "^19.1.0",

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, memo } from "react";
 import { ChevronDown, X } from "lucide-react";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 
@@ -8,58 +8,67 @@ import { SimpleMasonry } from "./hooks/use-masonary-hook";
 import "./gallery.css";
 
 // Gallery image component for rendering individual images in the masonry grid
-const GalleryImage = ({
-  image,
-  index,
-  onClick,
-  isSelected,
-}: {
-  image: Image;
-  index: number;
-  onClick: (image: Image) => void;
-  isSelected: boolean;
-}) => {
-  const imageRef = useRef<HTMLDivElement>(null);
+const GalleryImage = memo(
+  ({
+    image,
+    index,
+    onClick,
+    isSelected,
+    imageRef,
+  }: {
+    image: Image;
+    index: number;
+    onClick: (image: Image) => void;
+    isSelected: boolean;
+    imageRef?: React.Ref<HTMLDivElement>;
+  }) => {
+    const localRef = useRef<HTMLDivElement>(null);
+    const ref = imageRef || localRef;
 
-  // Scroll selected image into view
-  useEffect(() => {
-    if (isSelected && imageRef.current) {
-      imageRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "center",
-        inline: "center",
-      });
-    }
-  }, [isSelected]);
+    // Scroll selected image into view
+    useEffect(() => {
+      if (isSelected && ref && "current" in ref && ref.current) {
+        ref.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+          inline: "center",
+        });
+      }
+    }, [isSelected, ref]);
 
-  return (
-    <motion.div
-      key={`${image.thumbnail}-${index}`}
-      className={`masonry-item ${isSelected ? "selected" : ""}`}
-      layoutId={`card-${image.thumbnail}`}
-      onClick={() => onClick(image)}
-      ref={imageRef}
-      style={{
-        border: isSelected ? "3px solid #3b82f6" : "3px solid transparent",
-        transition: "border-color 0.3s ease",
-        boxShadow: isSelected ? "2px 2px 4px rgba(59, 130, 246, 0.5)" : "none",
-      }}
-    >
-      <img
-        src={image.thumbnail}
-        alt="Gallery background"
-        className="gallery-image gallery-image-bg w-full"
-        loading="lazy"
-      />
-      <img
-        src={image.thumbnail}
-        alt="Gallery foreground"
-        className="gallery-image gallery-image-fg w-full"
-        loading="lazy"
-      />
-    </motion.div>
-  );
-};
+    return (
+      <motion.div
+        key={`${image.thumbnail}-${index}`}
+        className={`masonry-item ${isSelected ? "selected" : ""}`}
+        layoutId={`card-${image.thumbnail}`}
+        onClick={() => onClick(image)}
+        ref={ref}
+        style={{
+          border: isSelected ? "3px solid #3b82f6" : "3px solid transparent",
+          transition: "border-color 0.3s ease",
+          boxShadow: isSelected ? "2px 2px 4px rgba(59, 130, 246, 0.5)" : "none",
+        }}
+      >
+        <img
+          src={image.thumbnail}
+          alt="Gallery background"
+          className="gallery-image gallery-image-bg w-full"
+          loading="lazy"
+        />
+        <img
+          src={image.thumbnail}
+          alt="Gallery foreground"
+          className="gallery-image gallery-image-fg w-full"
+          loading="lazy"
+        />
+      </motion.div>
+    );
+  },
+  (prevProps, nextProps) =>
+    prevProps.image.thumbnail === nextProps.image.thumbnail &&
+    prevProps.index === nextProps.index &&
+    prevProps.isSelected === nextProps.isSelected,
+);
 
 // Modal image component with zoom and pan functionality
 const ModalImage = ({
@@ -123,9 +132,9 @@ const ModalImage = ({
       }
     }
 
-    const { width: imgWidth, height: imgHeight } = imageDimensions;
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
+    const { width: imgWidth, height: imgHeight } = imageDimensions;
 
     switch (zoom) {
       case 1:
@@ -317,7 +326,8 @@ function App() {
   const [showPanHint, setShowPanHint] = useState(true);
   const [isPaging, setIsPaging] = useState(false); // Lock to prevent concurrent page changes
   const heroRef = useRef<HTMLDivElement>(null);
-  const scrollPositionRef = useRef<number>(0); // Store scroll position
+  const galleryGridRef = useRef<HTMLDivElement>(null);
+  const lastImageRef = useRef<HTMLDivElement>(null);
 
   // Select first image as hero image
   const heroImage = useMemo(() => {
@@ -354,10 +364,21 @@ function App() {
     };
   };
 
+  // Reset isPaging when images are loaded
+  useEffect(() => {
+    const handleImagesLoaded = () => {
+      setIsPaging(false);
+    };
+
+    window.addEventListener("imagesLoaded", handleImagesLoaded);
+    return () => {
+      window.removeEventListener("imagesLoaded", handleImagesLoaded);
+    };
+  }, []);
+
   // Infinite scroll: Load next page when near bottom
   useEffect(() => {
     if (currentPage >= totalPages || isLoading || isPaging) {
-      console.log("Infinite scroll check: ", { currentPage, totalPages, isLoading, isPaging });
       return;
     }
 
@@ -366,21 +387,13 @@ function App() {
       const pageHeight = document.documentElement.scrollHeight;
       const triggerDistance = 500;
 
-      console.log("Scroll check: ", {
-        scrollPosition,
-        pageHeight,
-        distanceFromBottom: pageHeight - scrollPosition,
-      });
-
-      if (pageHeight - scrollPosition < triggerDistance) {
-        console.log("Triggering next page from scroll...");
+      if (pageHeight - scrollPosition < triggerDistance && !isPaging) {
         setIsPaging(true);
-        scrollPositionRef.current = window.scrollY; // Save scroll position
         nextPage();
       }
     };
 
-    const debouncedScroll = debounce(handleScroll, 200);
+    const debouncedScroll = debounce(handleScroll, 300);
     window.addEventListener("scroll", debouncedScroll);
 
     return () => {
@@ -388,24 +401,13 @@ function App() {
     };
   }, [currentPage, totalPages, isLoading, isPaging, nextPage]);
 
-  // Restore scroll position after page change
-  useEffect(() => {
-    if (!isPaging) return;
-    console.log("Restoring scroll position to: ", scrollPositionRef.current);
-    window.scrollTo(0, scrollPositionRef.current);
-    setIsPaging(false); // Release lock
-  }, [paginatedImages]);
-
   // Handle next page button click
   const handleNextPage = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (currentPage >= totalPages || isLoading || isPaging) {
-      console.log("Next button blocked: ", { currentPage, totalPages, isLoading, isPaging });
       return;
     }
-    console.log("Next button clicked, going to page: ", currentPage + 1);
     setIsPaging(true);
-    scrollPositionRef.current = window.scrollY;
     nextPage();
   };
 
@@ -413,12 +415,8 @@ function App() {
   const handlePreviousPage = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (currentPage <= 1 || isLoading || isPaging) {
-      console.log("Previous button blocked: ", { currentPage, isLoading, isPaging });
       return;
     }
-    console.log("Previous button clicked, going to page: ", currentPage - 1);
-    setIsPaging(true);
-    scrollPositionRef.current = window.scrollY;
     previousPage();
   };
 
@@ -681,7 +679,12 @@ function App() {
 
       {/* Gallery Grid */}
       {isHeroLoaded && galleryImages.length > 0 && (
-        <main id="gallery-grid" tabIndex={-1} className="w-full px-2 py-2 min-h-screen">
+        <main
+          id="gallery-grid"
+          ref={galleryGridRef}
+          tabIndex={-1}
+          className="w-full px-2 py-2 min-h-screen"
+        >
           <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent mb-2" />
           <SimpleMasonry>
             {galleryImages.map((image, index) => (
@@ -696,6 +699,7 @@ function App() {
                     lastViewedImage.thumbnail === image.thumbnail) ||
                   false
                 }
+                imageRef={index === galleryImages.length - 1 ? lastImageRef : undefined}
               />
             ))}
           </SimpleMasonry>
@@ -730,9 +734,6 @@ function App() {
                 Next
               </button>
             </div>
-            <p className="text-sm mt-4">
-              Press ESC to close • Arrow keys to navigate • Space for zoom/random • Drag to pan
-            </p>
           </div>
         </main>
       )}
