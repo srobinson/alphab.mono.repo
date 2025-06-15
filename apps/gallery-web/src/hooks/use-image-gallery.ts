@@ -39,6 +39,7 @@ interface UseImageGalleryReturn {
   totalImages: number;
   isLoading: boolean;
   error: string | null;
+  galleryData: GalleryData | null; // Expose galleryData for dimensions
 
   // Navigation methods
   nextImage: () => Image | null;
@@ -51,6 +52,7 @@ interface UseImageGalleryReturn {
   getCurrentImage: () => Image | null;
   setCurrentImage: (image: Image) => void;
   findImageIndex: (image: Image) => number;
+  getImageDimensions: (image: Image) => { width: number; height: number } | null;
 
   // Additional utility methods
   resetToFirst: () => Image | null;
@@ -198,6 +200,19 @@ export function useImageGallery(): UseImageGalleryReturn {
     [images],
   );
 
+  const getImageDimensions = useCallback(
+    (image: Image): { width: number; height: number } | null => {
+      if (!galleryData?.images) return null;
+
+      const imageData = galleryData.images.find((img) =>
+        image.full.includes(img.variants.original.filename),
+      );
+
+      return imageData ? imageData.variants.original : null;
+    },
+    [galleryData],
+  );
+
   const reshuffleGallery = () => {
     if (galleryData?.images) {
       const reshuffled = shuffleArray(galleryData.images);
@@ -216,6 +231,7 @@ export function useImageGallery(): UseImageGalleryReturn {
     totalImages: images.length,
     isLoading,
     error,
+    galleryData, // Expose galleryData
     nextImage,
     previousImage,
     goToImage,
@@ -223,6 +239,7 @@ export function useImageGallery(): UseImageGalleryReturn {
     getCurrentImage,
     setCurrentImage,
     findImageIndex,
+    getImageDimensions, // New utility method
     resetToFirst,
     canGoNext,
     canGoPrevious,

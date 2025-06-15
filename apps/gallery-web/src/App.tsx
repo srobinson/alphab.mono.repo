@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { ChevronDown, X } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 
 import { useImageLoader } from "./hooks/use-image-loader";
 import { useImageGallery } from "./hooks/use-image-gallery";
@@ -11,71 +11,192 @@ const GalleryImage = ({
   image,
   index,
   onClick,
+  isSelected,
 }: {
   image: Image;
   index: number;
   onClick: (image: Image) => void;
+  isSelected: boolean;
 }) => {
-  const { src: loadedSrc, isLoaded } = useImageLoader(image.thumbnail, image.full);
+  const imageRef = useRef<HTMLDivElement>(null);
+
+  // Scroll into view when selected
+  useEffect(() => {
+    if (isSelected && imageRef.current) {
+      imageRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+        inline: "center",
+      });
+    }
+  }, [isSelected]);
 
   return (
     <motion.div
       key={`${image.thumbnail}-${index}`}
-      className="masonry-item relative overflow-hidden rounded-lg cursor-pointer group"
+      className={`masonry-item ${isSelected ? "selected" : ""}`}
       layoutId={`card-${image.thumbnail}`}
       onClick={() => onClick(image)}
-      whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.2 }}
+      ref={imageRef}
+      style={{
+        border: isSelected ? "3px solid #3b82f6" : "3px solid transparent",
+        transition: "border-color 0.3s ease",
+        boxShadow: isSelected ? "2px 2px 4px rgba(59, 130, 246, 0.5)" : "none",
+      }}
     >
-      {/* Background blur image - always visible while loading */}
       <img
         src={image.thumbnail}
         alt="Gallery background"
-        className="w-full h-auto object-cover transition-opacity duration-500"
-        style={{
-          filter: "blur(10px) saturate(1.1)",
-          transform: "scale(1.05)",
-          opacity: isLoaded ? 0 : 1,
-        }}
+        className="gallery-image gallery-image-bg w-full"
       />
-
-      {/* Main image - fades in when loaded */}
       <img
-        src={loadedSrc}
-        alt="Gallery image"
-        className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000"
-        style={{
-          opacity: isLoaded ? 1 : 0,
-        }}
+        src={image.thumbnail}
+        alt="Gallery foreground"
+        className="gallery-image gallery-image-fg w-full"
       />
-
-      {/* Loading indicator */}
-      {!isLoaded && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-          <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-        </div>
-      )}
-
-      {/* Hover overlay */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
     </motion.div>
   );
 };
 
-// Modal image component with progressive loading
+// Single Modal Image Component with Three Zoom States and Panning
 const ModalImage = ({
   image,
   imageZoom,
   onDoubleClick,
+  imageDimensions,
+  showPanHint,
+  onDismissPanHint,
 }: {
   image: Image;
   imageZoom: number;
   onDoubleClick: () => void;
+  imageDimensions?: { width: number; height: number } | null;
+  showPanHint: boolean;
+  onDismissPanHint: () => void;
 }) => {
   const { src: loadedSrc, isLoaded } = useImageLoader(image.thumbnail, image.full);
 
+  // Pan state
+  const [isPanning, setIsPanning] = useState(false);
+  const panX = useMotionValue(0);
+  const panY = useMotionValue(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Reset pan when zoom changes or image changes
+  useEffect(() => {
+    panX.set(0);
+    panY.set(0);
+  }, [imageZoom, image.full, panX, panY]);
+
+  // Check if panning should be enabled
+  const isPanningEnabled = useMemo(() => {
+    if (!imageDimensions || imageZoom === 3) return false; // No panning for fit height
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const { width: imgWidth, height: imgHeight } = imageDimensions;
+
+    if (imageZoom === 1) {
+      // Original size - enable panning if image is larger than viewport
+      return imgWidth > viewportWidth || imgHeight > viewportHeight;
+    } else if (imageZoom === 2) {
+      // Fit width - enable panning if scaled height is larger than viewport
+      const scaledHeight = (imgHeight * viewportWidth) / imgWidth;
+      return scaledHeight > viewportHeight;
+    }
+
+    return false;
+  }, [imageDimensions, imageZoom]);
+
+  // Calculate styles for each zoom level with pan constraints
+  const getZoomStyles = (zoom: number) => {
+    if (!imageDimensions) {
+      // Fallback if no dimensions available
+      switch (zoom) {
+        case 1:
+          return { width: "auto", height: "auto", maxWidth: "90vw", maxHeight: "90vh" };
+        case 2:
+          return { width: "100vw", height: "auto" };
+        case 3:
+          return { width: "auto", height: "100vh" };
+        default:
+          return { width: "auto", height: "auto", maxWidth: "90vw", maxHeight: "90vh" };
+      }
+    }
+
+    const { width: imgWidth, height: imgHeight } = imageDimensions;
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    switch (zoom) {
+      case 1: // Original size
+        return {
+          width: imgWidth,
+          height: imgHeight,
+          maxWidth: "unset",
+          maxHeight: "unset",
+        };
+
+      case 2: // Fit width (100vw)
+        return {
+          width: viewportWidth,
+          height: (imgHeight * viewportWidth) / imgWidth,
+          maxWidth: "unset",
+          maxHeight: "unset",
+        };
+
+      case 3: // Fit height (100vh)
+        return {
+          width: (imgWidth * viewportHeight) / imgHeight,
+          height: viewportHeight,
+        };
+
+      default:
+        return { width: "unset", height: "unset" };
+    }
+  };
+
+  // Calculate pan constraints
+  const getPanConstraints = () => {
+    if (!imageDimensions || !isPanningEnabled) {
+      return { left: 0, right: 0, top: 0, bottom: 0 };
+    }
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const { width: imgWidth, height: imgHeight } = imageDimensions;
+
+    let displayWidth: number, displayHeight: number;
+
+    if (imageZoom === 1) {
+      displayWidth = imgWidth;
+      displayHeight = imgHeight;
+    } else if (imageZoom === 2) {
+      displayWidth = viewportWidth;
+      displayHeight = (imgHeight * viewportWidth) / imgWidth;
+    } else {
+      displayWidth = (imgWidth * viewportHeight) / imgHeight;
+      displayHeight = viewportHeight;
+    }
+
+    const maxPanX = Math.max(0, (displayWidth - viewportWidth) / 2);
+    const maxPanY = Math.max(0, (displayHeight - viewportHeight) / 2);
+
+    return {
+      left: -maxPanX,
+      right: maxPanX,
+      top: -maxPanY,
+      bottom: maxPanY,
+    };
+  };
+
+  const panConstraints = getPanConstraints();
+
   return (
-    <div className="relative flex items-center justify-center w-full h-full">
+    <div
+      ref={containerRef}
+      className="relative flex items-center justify-center w-full h-full overflow-hidden"
+    >
       {/* Background blur image */}
       <img
         src={image.thumbnail}
@@ -88,29 +209,56 @@ const ModalImage = ({
         }}
       />
 
-      {/* Main high-res image */}
+      {/* Main high-res image with smooth zoom transitions and panning */}
       <motion.img
         src={loadedSrc}
         alt="Full resolution"
-        className="relative block transition-opacity duration-1000"
+        className={`relative block object-contain select-none ${
+          isPanningEnabled ? "cursor-grab" : "cursor-pointer"
+        } ${isPanning ? "cursor-grabbing" : ""}`}
         style={{
-          // objectFit: imageZoom === 1 ? "cover" : imageZoom === 2 ? "contain" : "cover",
-          maxHeight: imageZoom === 1 ? "" : imageZoom === 2 ? "100vw" : "100vh",
-          maxWidth: imageZoom === 1 ? "-webkit-fill-available" : imageZoom === 2 ? "" : "",
           opacity: isLoaded ? 1 : 0,
+          transition: "opacity 1s ease",
+          x: panX,
+          y: panY,
         }}
-        animate={
-          {
-            // maxHeight: imageZoom === 1 ? "" : imageZoom === 2 ? "" : "100vh",
-          }
-        }
+        animate={getZoomStyles(imageZoom)}
         transition={{
-          duration: 0.3,
-          ease: "easeInOut",
+          duration: 0.5,
+          ease: [0.25, 0.1, 0.25, 1], // Custom bezier for smooth feel
+          type: "tween",
         }}
         onDoubleClick={onDoubleClick}
+        drag={isPanningEnabled}
+        dragConstraints={panConstraints}
+        dragElastic={0.05}
+        dragMomentum={false}
+        onDragStart={() => setIsPanning(true)}
+        onDragEnd={() => setIsPanning(false)}
+        whileDrag={{ scale: 0.98 }}
       />
+
       <LoadingProgress isLoaded={isLoaded} />
+
+      {/* Pan hint for large images */}
+      {isPanningEnabled && isLoaded && showPanHint && (
+        <motion.div
+          className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-10 px-3 py-2 rounded-lg bg-black/70 text-white text-sm pointer-events-auto flex items-center gap-2"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ delay: 1, duration: 2 }}
+        >
+          <span>Drag to pan • Double-click to zoom</span>
+          <button
+            onClick={() => onDismissPanHint()}
+            className="ml-1 p-1 rounded-full hover:bg-white/20 transition-colors"
+            title="Don't show again"
+          >
+            <X size={14} />
+          </button>
+        </motion.div>
+      )}
     </div>
   );
 };
@@ -163,11 +311,14 @@ function App() {
     setCurrentImage,
     getRandomImage,
     findImageIndex,
+    getImageDimensions,
   } = useImageGallery();
 
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
-  const [imageZoom, setImageZoom] = useState(1);
+  const [lastViewedImage, setLastViewedImage] = useState<Image | null>(null); // Track last viewed image
+  const [imageZoom, setImageZoom] = useState(2);
   const [direction, setDirection] = useState(0);
+  const [showPanHint, setShowPanHint] = useState(true);
 
   const heroImage = useMemo(() => {
     return images.length > 0 ? images[0] : null;
@@ -182,6 +333,12 @@ function App() {
     if (!heroImage) return images || [];
     return images.filter((img) => img.thumbnail !== heroImage.thumbnail);
   }, [images, heroImage]);
+
+  // Get dimensions for selected image
+  const selectedImageDimensions = useMemo(() => {
+    if (!selectedImage) return null;
+    return getImageDimensions(selectedImage);
+  }, [selectedImage, getImageDimensions]);
 
   const changeImage = (direction: number) => {
     if (!selectedImage) return;
@@ -198,19 +355,31 @@ function App() {
     }
   };
 
+  // Handle modal close - set the last viewed image for highlighting
+  const handleModalClose = () => {
+    if (selectedImage) {
+      setLastViewedImage(selectedImage);
+    }
+    setSelectedImage(null);
+  };
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setSelectedImage(null);
+        handleModalClose();
       } else if (e.key === "ArrowRight") {
         changeImage(1);
       } else if (e.key === "ArrowLeft") {
         changeImage(-1);
       } else if (e.key === " ") {
         e.preventDefault();
-        const randomImg = getRandomImage();
-        if (randomImg && selectedImage) {
-          setSelectedImage(randomImg);
+        if (selectedImage) {
+          handleZoomCycle();
+        } else {
+          const randomImg = getRandomImage();
+          if (randomImg) {
+            setSelectedImage(randomImg);
+          }
         }
       }
     };
@@ -226,7 +395,71 @@ function App() {
   const handleImageClick = (image: Image) => {
     setSelectedImage(image);
     setCurrentImage(image);
+    // Clear the last viewed image when opening a new one
+    setLastViewedImage(null);
   };
+
+  // Enhanced zoom cycling with smooth transitions
+  const handleZoomCycle = () => {
+    setImageZoom((prev) => {
+      const nextZoom = prev === 1 ? 2 : prev === 2 ? 3 : 1;
+      return nextZoom;
+    });
+  };
+
+  const getZoomLabel = (zoom: number) => {
+    switch (zoom) {
+      case 1:
+        return "Original Size";
+      case 2:
+        return "Fit Width";
+      case 3:
+        return "Fit Height";
+      default:
+        return "Original Size";
+    }
+  };
+
+  // Zoom Controls Component
+  const ZoomControls = () => (
+    <motion.div
+      className="absolute bottom-4 right-4 z-20 flex gap-2"
+      initial={{ opacity: 1, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1, transition: { delay: 0.3 } }}
+      exit={{ opacity: 1, scale: 0.95 }}
+    >
+      <button
+        onClick={() => setImageZoom(1)}
+        className={`px-3 py-1 rounded-full text-sm transition-colors ${
+          imageZoom === 1
+            ? "bg-white/30 text-white"
+            : "bg-black/30 text-white/70 hover:text-white hover:bg-black/50"
+        }`}
+      >
+        Original
+      </button>
+      <button
+        onClick={() => setImageZoom(2)}
+        className={`px-3 py-1 rounded-full text-sm transition-colors ${
+          imageZoom === 2
+            ? "bg-white/30 text-white"
+            : "bg-black/30 text-white/70 hover:text-white hover:bg-black/50"
+        }`}
+      >
+        Fit Width
+      </button>
+      <button
+        onClick={() => setImageZoom(3)}
+        className={`px-3 py-1 rounded-full text-sm transition-colors ${
+          imageZoom === 3
+            ? "bg-white/30 text-white"
+            : "bg-black/30 text-white/70 hover:text-white hover:bg-black/50"
+        }`}
+      >
+        Fit Height
+      </button>
+    </motion.div>
+  );
 
   // Loading state
   if (isLoading) {
@@ -345,23 +578,18 @@ function App() {
 
           <SimpleMasonry>
             {galleryImages.map((image, index) => (
-              <motion.div
-                key={`${image.thumbnail}-${index}`} // More stable key
-                className="masonry-item"
-                layoutId={`card-${image.thumbnail}`}
-                onClick={() => handleImageClick(image)}
-              >
-                <img
-                  src={image.thumbnail}
-                  alt="Gallery background"
-                  className="gallery-image gallery-image-bg w-full"
-                />
-                <img
-                  src={image.thumbnail}
-                  alt="Gallery foreground"
-                  className="gallery-image gallery-image-fg w-full"
-                />
-              </motion.div>
+              <GalleryImage
+                key={`${image.thumbnail}-${index}`}
+                image={image}
+                index={index}
+                onClick={handleImageClick}
+                isSelected={
+                  (!selectedImage && // Only highlight when modal is closed
+                    lastViewedImage &&
+                    lastViewedImage.thumbnail === image.thumbnail) ||
+                  false
+                }
+              />
             ))}
           </SimpleMasonry>
 
@@ -370,82 +598,55 @@ function App() {
               Showing {galleryImages.length} of {totalImages} images
             </p>
             <p className="text-sm mt-2">
-              Press ESC to close • Arrow keys to navigate • Space for random
+              Press ESC to close • Arrow keys to navigate • Space for zoom/random • Drag to pan
             </p>
           </div>
         </main>
       )}
 
+      {/* Modal */}
       <AnimatePresence>
         {selectedImage && (
           <motion.div
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-            onClick={(e) => e.target === e.currentTarget && setSelectedImage(null)}
+            onClick={(e) => e.target === e.currentTarget && handleModalClose()}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <AnimatePresence initial={false} custom={direction}>
-              <motion.div
-                key={selectedImage.thumbnail}
-                className="relative flex items-center justify-center w-screen h-full"
-                custom={direction}
-                variants={{
-                  enter: (direction: number) => ({
-                    // x: direction > 0 ? "100%" : "-100%",
-                    opacity: 0,
-                  }),
-                  center: {
-                    zIndex: 1,
-                    // x: 0,
-                    opacity: 1,
-                  },
-                  exit: (direction: number) => ({
-                    zIndex: 0,
-                    // x: direction < 0 ? "100%" : "-100%",
-                    opacity: 0,
-                  }),
-                }}
-                initial="center"
-                animate="center"
-                exit="center"
-                transition={{
-                  x: { type: "spring", stiffness: 300, damping: 30 },
-                  opacity: { duration: 0.2 },
-                }}
-              >
-                <ModalImage
-                  image={selectedImage}
-                  imageZoom={imageZoom}
-                  onDoubleClick={() =>
-                    setImageZoom(
-                      imageZoom === 1 ? 2 : imageZoom === 2 ? 3 : imageZoom === 3 ? 1 : 1,
-                    )
-                  }
-                />
-              </motion.div>
-            </AnimatePresence>
+            <ModalImage
+              image={selectedImage}
+              imageZoom={imageZoom}
+              onDoubleClick={handleZoomCycle}
+              imageDimensions={selectedImageDimensions}
+              showPanHint={showPanHint}
+              onDismissPanHint={() => setShowPanHint(false)}
+            />
 
             {/* Close button */}
-            <motion.button
-              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/30 text-white/70 hover:text-white hover:bg-black/50 transition-colors"
-              onClick={() => setSelectedImage(null)}
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1, transition: { delay: 0.3 } }}
-              exit={{ opacity: 0, scale: 0.5 }}
+            <button
+              onClick={handleModalClose}
+              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
             >
               <X size={24} />
-            </motion.button>
+            </button>
 
-            {/* Image counter */}
+            {/* Zoom controls */}
+            <ZoomControls />
+
+            {/* Zoom indicator */}
             <motion.div
-              className="absolute bottom-4 left-4 z-20 px-3 py-1 rounded-full bg-black/30 text-white/70 text-sm"
-              initial={{ opacity: 0, scale: 0.5 }}
-              animate={{ opacity: 1, scale: 1, transition: { delay: 0.3 } }}
-              exit={{ opacity: 0, scale: 0.5 }}
+              className="absolute top-4 left-4 z-20 px-3 py-2 rounded-lg bg-black/50 text-white text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
             >
-              {images.findIndex((img) => img.thumbnail === selectedImage.thumbnail) + 1} /{" "}
-              {totalImages} " " [{imageZoom}]
+              {getZoomLabel(imageZoom)}
+              {selectedImageDimensions && (
+                <div className="text-xs text-white/60 mt-1">
+                  {selectedImageDimensions.width} × {selectedImageDimensions.height}
+                </div>
+              )}
             </motion.div>
           </motion.div>
         )}

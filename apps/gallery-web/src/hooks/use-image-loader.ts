@@ -1,5 +1,4 @@
-// import { useState, useEffect } from "react";
-
+// Enhanced useImageLoader hook with minimum transition duration
 import { useState, useEffect, useRef } from "react";
 
 interface UseImageLoaderReturn {
@@ -15,12 +14,19 @@ export const useImageLoader = (lowResSrc?: string, highResSrc?: string): UseImag
   const [hasError, setHasError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const imageRef = useRef<HTMLImageElement | null>(null);
+  const loadStartTimeRef = useRef<number>(0);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     // Reset states
     setHasError(false);
     setIsLoaded(false);
     setIsLoading(false);
+
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
     if (!lowResSrc) {
       setSrc("");
@@ -36,27 +42,53 @@ export const useImageLoader = (lowResSrc?: string, highResSrc?: string): UseImag
       return;
     }
 
-    // Start loading high-res image
+    // Start loading high-res image and record start time
     setIsLoading(true);
+    loadStartTimeRef.current = Date.now();
     const highResImg = new Image();
     imageRef.current = highResImg;
 
     highResImg.onload = () => {
       // Check if this is still the current image request
       if (imageRef.current === highResImg) {
-        setSrc(highResSrc);
-        setIsLoaded(true);
-        setIsLoading(false);
-        setHasError(false);
+        const loadTime = Date.now() - loadStartTimeRef.current;
+        const minTransitionTime = 333;
+
+        if (loadTime < minTransitionTime) {
+          // If image loaded too quickly, delay the transition
+          timeoutRef.current = setTimeout(() => {
+            setSrc(highResSrc);
+            setIsLoaded(true);
+            setIsLoading(false);
+            setHasError(false);
+          }, minTransitionTime - loadTime);
+        } else {
+          // Image took long enough, show immediately
+          setSrc(highResSrc);
+          setIsLoaded(true);
+          setIsLoading(false);
+          setHasError(false);
+        }
       }
     };
 
     highResImg.onerror = () => {
       // Check if this is still the current image request
       if (imageRef.current === highResImg) {
-        setHasError(true);
-        setIsLoading(false);
-        // Keep showing low-res image on error
+        const loadTime = Date.now() - loadStartTimeRef.current;
+        const minTransitionTime = 500;
+
+        if (loadTime < minTransitionTime) {
+          timeoutRef.current = setTimeout(() => {
+            setHasError(true);
+            setIsLoading(false);
+            // Keep showing low-res image on error
+          }, minTransitionTime - loadTime);
+        } else {
+          setHasError(true);
+          setIsLoading(false);
+          // Keep showing low-res image on error
+        }
       }
     };
 
@@ -64,6 +96,9 @@ export const useImageLoader = (lowResSrc?: string, highResSrc?: string): UseImag
 
     // Cleanup function
     return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
       if (imageRef.current) {
         imageRef.current.onload = null;
         imageRef.current.onerror = null;
