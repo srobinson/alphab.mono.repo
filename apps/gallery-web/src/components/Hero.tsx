@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { useImageLoader } from "../hooks/use-image-loader";
 import { LoadingProgress } from "./LoadingProgress";
-import { motion, AnimatePresence } from "framer-motion";
 
 interface Image {
   full: string;
@@ -17,6 +17,7 @@ interface HeroProps {
   onScrollToGrid?: () => void;
   setSelectedImage: (image: any) => void;
   setCurrentImage: (image: any) => void;
+  isModalOpen?: boolean;
 }
 
 export const Hero = ({
@@ -27,22 +28,26 @@ export const Hero = ({
   onScrollToGrid,
   setSelectedImage,
   setCurrentImage,
+  isModalOpen = false,
 }: HeroProps) => {
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
-  const { isLoaded } = useImageLoader(heroImage?.full || "");
+  const { src: loadedSrc, isLoaded } = useImageLoader(heroImage?.thumbnail, heroImage?.full);
 
   // Handle keyboard navigation
   const handleHeroKeyDown = (e: KeyboardEvent) => {
+    // Only handle keyboard events if modal is not open
+    if (isModalOpen) return;
+
     if (e.key === "ArrowDown") {
       e.preventDefault();
       if (onScrollToGrid) onScrollToGrid();
-    } else if (e.key === "ArrowLeft") {
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
       e.preventDefault();
-      if (onImageChange) onImageChange("prev");
-    } else if (e.key === "ArrowRight") {
-      e.preventDefault();
-      if (onImageChange) onImageChange("next");
+      if (heroImage) {
+        setSelectedImage(heroImage);
+        setCurrentImage(heroImage);
+      }
     } else if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       if (onImageClick && heroImage) onImageClick(heroImage);
@@ -106,39 +111,39 @@ export const Hero = ({
             }}
             loading="lazy"
           />
-          {heroImage.full && (
-            <img
-              src={heroImage.full}
-              alt="Main content"
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{
-                opacity: isLoaded ? 1 : 0,
-                transition: "opacity ease 1.5s",
-              }}
-              loading="lazy"
-            />
-          )}
+          <img
+            src={loadedSrc}
+            alt="Main content"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{
+              opacity: isLoaded ? 1 : 0,
+              transition: "opacity ease 1.5s",
+            }}
+            loading="lazy"
+          />
         </>
       )}
-      <div
-        className="relative z-20 text-center p-4"
-        style={{
-          fontSize: isLoaded ? "8vw" : "10vw",
-          opacity: isLoaded ? 0 : 0.8,
-          transform: isLoaded ? "translateY(0) scale(1)" : "translateY(4px) scale(1.1)",
-          transition:
-            "font-size ease-out .100s 1.3s, transform ease-out .500s 1.3s, opacity ease-out 1s 1.3s",
-        }}
-      >
-        <h1 className="md:text-10xl pb-0 font-bold tracking-tighter">Ephemeral Art</h1>
-        <p className="text-lg md:text-xl text-white/90">
-          A curated collection of {totalImages} textures and patterns.
-        </p>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div
+          className="text-center p-4"
+          style={{
+            fontSize: isLoaded ? "8vw" : "10vw",
+            opacity: isLoaded ? 0 : 0.8,
+            transform: isLoaded ? "translateY(0) scale(1)" : "translateY(4px) scale(1.1)",
+            transition:
+              "font-size ease-out .100s 1.3s, transform ease-out .500s 1.3s, opacity ease-out 1s 1.3s",
+          }}
+        >
+          <h1 className="md:text-10xl pb-0 font-bold tracking-tighter">Ephemeral Art</h1>
+          <p className="text-lg md:text-xl text-white/90">
+            A curated collection of {totalImages} textures and patterns.
+          </p>
+        </div>
       </div>
       <LoadingProgress isLoaded={isLoaded} />
       <button
         onClick={onScrollToGrid}
-        className="absolute bottom-10 z-20 text-white/80 hover:text-white transition-colors"
+        className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 text-white/80 hover:text-white transition-colors"
         style={{
           opacity: isLoaded ? 1 : 0,
           transition: "opacity 1s ease 0.5s",

@@ -20,6 +20,8 @@ interface ImageModalProps {
   onDismissPanHint: () => void;
   zoomLabel: string;
   onZoomChange: (zoom: number) => void;
+  onNextImage?: () => void;
+  onPreviousImage?: () => void;
 }
 
 export function ImageModal({
@@ -32,12 +34,35 @@ export function ImageModal({
   onDismissPanHint,
   zoomLabel,
   onZoomChange,
+  onNextImage,
+  onPreviousImage,
 }: ImageModalProps) {
   const { src: loadedSrc, isLoaded } = useImageLoader(image.thumbnail, image.full);
   const [isPanning, setIsPanning] = useState(false);
   const panX = useMotionValue(0);
   const panY = useMotionValue(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Handle keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      } else if (e.key === "ArrowRight" && onNextImage) {
+        e.preventDefault();
+        onNextImage();
+      } else if (e.key === "ArrowLeft" && onPreviousImage) {
+        e.preventDefault();
+        onPreviousImage();
+      } else if (e.key === " ") {
+        e.preventDefault();
+        onDoubleClick();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose, onNextImage, onPreviousImage, onDoubleClick]);
 
   // Reset pan position on zoom or image change
   useEffect(() => {
@@ -65,6 +90,9 @@ export function ImageModal({
 
   // Calculate zoom styles based on zoom level
   const getZoomStyles = (zoom: number) => {
+    console.log("imageDimensions", imageDimensions);
+    console.log("zoom", zoom);
+
     if (!imageDimensions) {
       switch (zoom) {
         case 1:

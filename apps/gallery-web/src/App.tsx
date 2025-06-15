@@ -324,8 +324,12 @@ function App() {
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [lastViewedImage, setLastViewedImage] = useState<Image | null>(null);
   const [imageZoom, setImageZoom] = useState(2);
+  const [direction, setDirection] = useState(0);
   const [showPanHint, setShowPanHint] = useState(true);
   const [isPaging, setIsPaging] = useState(false);
+  const heroRef = useRef<HTMLDivElement>(null);
+  const galleryGridRef = useRef<HTMLDivElement>(null);
+  const lastImageRef = useRef<HTMLDivElement>(null);
 
   // Select first image as hero image
   const heroImage = useMemo(() => {
@@ -416,7 +420,6 @@ function App() {
     // Reset scroll position when opening modal
     window.scrollTo(0, 0);
     setSelectedImage(image);
-    setCurrentImage(image);
   };
 
   // Handle modal close
@@ -429,36 +432,40 @@ function App() {
     if (heroImage) {
       setCurrentImage(heroImage);
     }
-    setImageZoom(0);
   };
 
-  // Handle keyboard navigation for modal
+  // Handle next image in modal
+  const handleNextImage = () => {
+    changeImage(1);
+  };
+
+  // Handle previous image in modal
+  const handlePreviousImage = () => {
+    changeImage(-1);
+  };
+
+  // Hero section keyboard navigation to gallery or modal
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        handleModalClose();
-      } else if (e.key === "ArrowRight") {
-        e.preventDefault();
-        changeImage(1);
-      } else if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        changeImage(-1);
-      } else if (e.key === " ") {
-        e.preventDefault();
-        if (selectedImage) {
-          handleZoomCycle();
-        } else {
-          const randomImg = getRandomImage();
-          if (randomImg) {
-            handleImageClick(randomImg);
+    const handleHeroKeyDown = (e: KeyboardEvent) => {
+      if (document.activeElement === heroRef.current) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          document.getElementById("gallery-grid")?.focus();
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+          e.preventDefault();
+          if (heroImage) {
+            setSelectedImage(heroImage);
+            setCurrentImage(heroImage);
+            setImageZoom(2); // Set initial zoom level
           }
         }
       }
     };
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedImage, paginatedImages]);
+    const heroElement = heroRef.current;
+    heroElement?.addEventListener("keydown", handleHeroKeyDown);
+    return () => heroElement?.removeEventListener("keydown", handleHeroKeyDown);
+  }, [heroImage]);
 
   // Handle hero image navigation
   const handleHeroImageChange = (direction: "prev" | "next") => {
@@ -559,6 +566,7 @@ function App() {
         onScrollToGrid={scrollToGallery}
         setSelectedImage={setSelectedImage}
         setCurrentImage={setCurrentImage}
+        isModalOpen={!!selectedImage}
       />
       <GalleryGrid
         images={paginatedImages}
@@ -573,19 +581,23 @@ function App() {
         isPaging={isPaging}
         lastViewedImage={lastViewedImage}
       />
-      {selectedImage && (
-        <ImageModal
-          image={selectedImage}
-          onClose={handleModalClose}
-          imageZoom={imageZoom}
-          onZoomChange={setImageZoom}
-          imageDimensions={selectedImageDimensions}
-          showPanHint={showPanHint}
-          onDismissPanHint={() => setShowPanHint(false)}
-          zoomLabel={getZoomLabel()}
-          onDoubleClick={handleZoomCycle}
-        />
-      )}
+      <AnimatePresence>
+        {selectedImage && (
+          <ImageModal
+            image={selectedImage}
+            onClose={handleModalClose}
+            imageZoom={imageZoom}
+            onDoubleClick={handleZoomCycle}
+            imageDimensions={selectedImageDimensions}
+            showPanHint={showPanHint}
+            onDismissPanHint={() => setShowPanHint(false)}
+            zoomLabel={getZoomLabel()}
+            onZoomChange={setImageZoom}
+            onNextImage={handleNextImage}
+            onPreviousImage={handlePreviousImage}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
