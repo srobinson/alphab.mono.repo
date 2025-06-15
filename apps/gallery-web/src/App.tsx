@@ -304,7 +304,7 @@ interface Image {
 
 function App() {
   const {
-    paginatedImages,
+    images,
     currentIndex,
     totalImages,
     isLoading,
@@ -328,14 +328,15 @@ function App() {
   const [direction, setDirection] = useState(0);
   const [showPanHint, setShowPanHint] = useState(true);
   const [isPaging, setIsPaging] = useState(false);
+  const [pendingAdvance, setPendingAdvance] = useState(false);
   const heroRef = useRef<HTMLDivElement>(null);
   const galleryGridRef = useRef<HTMLDivElement>(null);
   const lastImageRef = useRef<HTMLDivElement>(null);
 
   // Select first image as hero image
   const heroImage = useMemo(() => {
-    return paginatedImages.length > 0 ? paginatedImages[0] : null;
-  }, [paginatedImages]);
+    return images.length > 0 ? images[0] : null;
+  }, [images]);
 
   // Get dimensions for selected image
   const selectedImageDimensions = useMemo(() => {
@@ -402,24 +403,24 @@ function App() {
   // Modal open if selectedImage is not null
   const isModalOpen = !!selectedImage;
 
-  // Find index of selectedImage in paginatedImages
+  // Find index of selectedImage in images
   const selectedIndex = selectedImage
-    ? paginatedImages.findIndex((img) => img.thumbnail === selectedImage.thumbnail)
+    ? images.findIndex((img) => img.thumbnail === selectedImage.thumbnail)
     : -1;
 
   // Modal navigation
   const handleNextImage = () => {
     if (selectedIndex === -1) return;
-    if (selectedIndex + 1 < paginatedImages.length) {
-      setSelectedImage(paginatedImages[selectedIndex + 1]);
-    } else if (paginatedImages.length < totalImages) {
-      // At end, fetch next page
+    if (selectedIndex + 1 < images.length) {
+      setSelectedImage(images[selectedIndex + 1]);
+    } else if (images.length < totalImages) {
+      setPendingAdvance(true);
       nextPage();
     }
   };
   const handlePreviousImage = () => {
     if (selectedIndex > 0) {
-      setSelectedImage(paginatedImages[selectedIndex - 1]);
+      setSelectedImage(images[selectedIndex - 1]);
     }
   };
 
@@ -439,15 +440,19 @@ function App() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isModalOpen, selectedIndex, paginatedImages.length, totalImages]);
+  }, [isModalOpen, selectedIndex, images.length, totalImages]);
 
   // When new images are loaded and user was at end, auto-advance
   useEffect(() => {
-    if (!isModalOpen || selectedIndex !== paginatedImages.length - 2) return;
-    if (paginatedImages.length > selectedIndex + 1) {
-      setSelectedImage(paginatedImages[selectedIndex + 1]);
+    if (
+      pendingAdvance &&
+      selectedIndex === images.length - 2 &&
+      images.length > selectedIndex + 1
+    ) {
+      setSelectedImage(images[selectedIndex + 1]);
+      setPendingAdvance(false);
     }
-  }, [paginatedImages.length]);
+  }, [images.length, pendingAdvance, selectedIndex]);
 
   // Handle image click to open modal
   const handleImageClick = (image: Image) => {
@@ -491,9 +496,9 @@ function App() {
     if (currentIndex === -1) return;
 
     const nextIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
-    if (nextIndex < 0 || nextIndex >= paginatedImages.length) return;
+    if (nextIndex < 0 || nextIndex >= images.length) return;
 
-    const nextImg = paginatedImages[nextIndex];
+    const nextImg = images[nextIndex];
     if (nextImg) {
       setCurrentImage(nextImg);
     }
@@ -532,13 +537,13 @@ function App() {
       const currentIndex = findImageIndex(selectedImage);
       if (currentIndex === -1) {
         // If the current image is not in the new page, select the first image
-        if (paginatedImages.length > 0) {
-          setSelectedImage(paginatedImages[0]);
-          setCurrentImage(paginatedImages[0]);
+        if (images.length > 0) {
+          setSelectedImage(images[0]);
+          setCurrentImage(images[0]);
         }
       }
     }
-  }, [paginatedImages, selectedImage, isPaging]);
+  }, [images, selectedImage, isPaging]);
 
   // Loading state for initial page
   if (isLoading && currentPage === 1) {
@@ -575,7 +580,7 @@ function App() {
   }
 
   // Empty state
-  if (!paginatedImages.length) {
+  if (!images.length) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -598,7 +603,7 @@ function App() {
         isModalOpen={isModalOpen}
       />
       <GalleryGrid
-        images={paginatedImages}
+        images={images}
         heroImage={heroImage}
         onImageClick={handleImageClick}
         onNextPage={handleNextPage}
@@ -625,6 +630,7 @@ function App() {
               onZoomChange={setImageZoom}
               onNextImage={handleNextImage}
               onPreviousImage={handlePreviousImage}
+              isLoading={isPaging}
             />
             <ImageCounter
               currentIndex={selectedIndex + 1}

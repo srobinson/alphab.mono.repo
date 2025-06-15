@@ -34,7 +34,6 @@ interface Image {
 
 interface UseImageGalleryReturn {
   images: Image[];
-  paginatedImages: Image[];
   currentImage: Image | null;
   currentIndex: number;
   currentPage: number;
@@ -75,7 +74,6 @@ export function useImageGallery(): UseImageGalleryReturn {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isPaging, setIsPaging] = useState(false);
-  const [paginatedImages, setPaginatedImages] = useState<Image[]>([]);
   const [imageDimensions, setImageDimensions] = useState<
     Map<string, { width: number; height: number }>
   >(new Map());
@@ -104,8 +102,16 @@ export function useImageGallery(): UseImageGalleryReturn {
     if (currentPage === 1) {
       setLoadedImages(newImages);
     } else {
+      console.log("newImages", newImages);
+      console.log("loadedImages", loadedImages);
+      console.log("currentPage", currentPage);
+      console.log("totalPages", totalPages);
+      console.log("isLoading", isLoading);
+      console.log("isPaging", isPaging);
+      console.log("pageSize", pageSize);
       setLoadedImages((prev) => [...prev, ...newImages]);
     }
+    setIsPaging(false);
 
     // Reset isPaging after images are loaded
     return () => {
@@ -258,11 +264,11 @@ export function useImageGallery(): UseImageGalleryReturn {
   };
 
   const nextPage = useCallback(() => {
-    if (currentPage < totalPages) {
-      setCurrentPage(currentPage + 1);
-      setCurrentIndex(0);
+    if (!isPaging && currentPage < totalPages) {
+      setIsPaging(true);
+      setCurrentPage((prev) => prev + 1);
     }
-  }, [currentPage, totalPages]);
+  }, [isPaging, currentPage, totalPages]);
 
   const previousPage = useCallback(() => {
     if (currentPage > 1) {
@@ -330,8 +336,7 @@ export function useImageGallery(): UseImageGalleryReturn {
   };
 
   return {
-    images,
-    paginatedImages: loadedImages,
+    images: loadedImages,
     currentImage,
     currentIndex,
     currentPage,
