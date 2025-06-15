@@ -231,13 +231,13 @@ export function ImageModal({
           <LoadingProgress isLoaded={isLoaded} />
           {isPanningEnabled && isLoaded && showPanHint && (
             <motion.div
-              className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-10 px-3 py-2 rounded-lg bg-black/70 text-white text-sm pointer-events-auto flex items-center gap-2"
-              initial={{ opacity: 0, y: 20 }}
+              className="absolute bottom-20 mx-auto z-10 px-3 py-2 rounded-lg bg-black/70 text-white text-sm pointer-events-auto flex items-center gap-2"
+              initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              transition={{ delay: 1, duration: 2 }}
+              transition={{ delay: 1, duration: 0.3 }}
             >
-              <span>Drag to pan • Double-click to zoom</span>
+              <span>Drag to pan</span>
               <button
                 onClick={() => onDismissPanHint()}
                 className="ml-1 p-1 rounded-full hover:bg-white/20 transition-colors"
