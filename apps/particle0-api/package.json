@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "description": "Particle0 API - FastAPI backend service",
   "private": true,
+  "meta": {
+    "type": "python"
+  },
   "scripts": {
     "clean": "alphab-clean",
     "bootstrap": "alphab-bootstrap",

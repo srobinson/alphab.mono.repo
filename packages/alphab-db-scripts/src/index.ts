@@ -1,8 +1,9 @@
 #!/usr/bin/env node
+// packages/alphab-db-scripts/src/index.ts
 
 import { Command } from "commander";
 import chalk from "chalk";
-import { createMigrationService, createClient } from "../services";
+import { createMigrationService, createClient } from "./services";
 
 // Type definitions for CLI
 interface MigrationResult {

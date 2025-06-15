@@ -42,5 +42,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "meta": {
+    "type": "node-lib"
   }
 }

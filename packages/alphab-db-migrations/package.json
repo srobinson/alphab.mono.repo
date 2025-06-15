@@ -8,8 +8,7 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     }
   },
   "scripts": {
@@ -51,5 +50,8 @@
   ],
   "author": "Alphab <info@alphab.dev>",
   "license": "MIT",
-  "type": "module"
+  "type": "module",
+  "meta": {
+    "type": "node-lib"
+  }
 }

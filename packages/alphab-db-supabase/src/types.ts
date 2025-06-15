@@ -1,3 +1,4 @@
+// packages/alphab-db-supabase/src/types.ts
 /**
  * World-class TypeScript types for Supabase database client
  * Following Supabase's proven patterns with KISS principles

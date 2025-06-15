@@ -2,9 +2,8 @@
  * Services layer - clear interface between CLI and implementations
  * Familiar pattern: CLI → Service → Database
  *
- * REAL POWER! 🚀
  */
-
+// packages/alphab-db-scripts/src/services/index.ts
 import { createClient as createDatabaseClient, createAdminClient } from "@alphab/db-supabase";
 import type { DatabaseClient } from "@alphab/db-supabase";
 import {
@@ -29,17 +28,17 @@ class EnhancedDatabaseClient {
   async sql(query: string, params?: unknown[]) {
     return this.client.sql(query, params);
   }
-  get users() {
-    return this.client.users as unknown as typeof this.client.users;
+  get users(): DatabaseClient["users"] {
+    return this.client.users;
   }
-  get vaults() {
+  get vaults(): DatabaseClient["vaults"] {
     return this.client.vaults as unknown as typeof this.client.vaults;
   }
-  get artifacts() {
+  get artifacts(): DatabaseClient["artifacts"] {
     return this.client.artifacts as unknown as typeof this.client.artifacts;
   }
-  get audit_logs() {
-    return this.client.audit_logs as unknown as typeof this.client.audit_logs;
+  get audit_logs(): DatabaseClient["audit_logs"] {
+    return this.client.audit_logs;
   }
 
   // Additional CLI-friendly methods
