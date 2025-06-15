@@ -5,9 +5,6 @@ import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-mo
 import { useImageLoader } from "./hooks/use-image-loader";
 import { useImageGallery } from "./hooks/use-image-gallery";
 import { SimpleMasonry } from "./hooks/use-masonary-hook";
-import { Hero } from "./components/Hero";
-import { GalleryGrid } from "./components/GalleryGrid";
-import { ImageModal } from "./components/ImageModal";
 import "./gallery.css";
 
 // Gallery image component for rendering individual images in the masonry grid
@@ -302,6 +299,7 @@ interface Image {
 }
 
 function App() {
+  // Gallery hook providing paginated images and navigation
   const {
     paginatedImages,
     currentIndex,
@@ -324,19 +322,47 @@ function App() {
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
   const [lastViewedImage, setLastViewedImage] = useState<Image | null>(null);
   const [imageZoom, setImageZoom] = useState(2);
+  const [direction, setDirection] = useState(0);
   const [showPanHint, setShowPanHint] = useState(true);
-  const [isPaging, setIsPaging] = useState(false);
+  const [isPaging, setIsPaging] = useState(false); // Lock to prevent concurrent page changes
+  const heroRef = useRef<HTMLDivElement>(null);
+  const galleryGridRef = useRef<HTMLDivElement>(null);
+  const lastImageRef = useRef<HTMLDivElement>(null);
 
   // Select first image as hero image
   const heroImage = useMemo(() => {
     return paginatedImages.length > 0 ? paginatedImages[0] : null;
   }, [paginatedImages]);
 
+  // Load hero image
+  const { src: heroSrc, isLoaded: isHeroLoaded } = useImageLoader(
+    heroImage?.thumbnail,
+    heroImage?.full,
+  );
+
+  // Filter out hero image from gallery
+  const galleryImages = useMemo(() => {
+    if (!heroImage) return paginatedImages || [];
+    return paginatedImages.filter((img) => img.thumbnail !== heroImage.thumbnail);
+  }, [paginatedImages, heroImage]);
+
   // Get dimensions for selected image
   const selectedImageDimensions = useMemo(() => {
     if (!selectedImage) return null;
     return getImageDimensions(selectedImage);
   }, [selectedImage, getImageDimensions]);
+
+  // Debounce function to limit rapid calls
+  const debounce = (func: () => void, delay: number) => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func();
+        timeoutId = null;
+      }, delay);
+    };
+  };
 
   // Reset isPaging when images are loaded
   useEffect(() => {
@@ -401,47 +427,31 @@ function App() {
     const currentSelectedIndex = findImageIndex(selectedImage);
     if (currentSelectedIndex === -1) return;
 
-    const nextIndex = currentSelectedIndex + direction;
-    if (nextIndex < 0 || nextIndex >= paginatedImages.length) return;
+    goToImage(currentSelectedIndex);
+    const nextImg = direction > 0 ? nextImage() : previousImage();
 
-    const nextImg = paginatedImages[nextIndex];
     if (nextImg) {
       setSelectedImage(nextImg);
-      setCurrentImage(nextImg);
+      setDirection(direction);
     }
   };
 
-  // Handle image click to open modal
-  const handleImageClick = (image: Image) => {
-    // Reset scroll position when opening modal
-    window.scrollTo(0, 0);
-    setSelectedImage(image);
-    setCurrentImage(image);
-  };
-
-  // Handle modal close
+  // Close modal and track last viewed image
   const handleModalClose = () => {
     if (selectedImage) {
       setLastViewedImage(selectedImage);
     }
     setSelectedImage(null);
-    // Only call setCurrentImage if heroImage exists
-    if (heroImage) {
-      setCurrentImage(heroImage);
-    }
-    setImageZoom(0);
   };
 
-  // Handle keyboard navigation for modal
+  // Keyboard navigation for modal and random image selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         handleModalClose();
       } else if (e.key === "ArrowRight") {
-        e.preventDefault();
         changeImage(1);
       } else if (e.key === "ArrowLeft") {
-        e.preventDefault();
         changeImage(-1);
       } else if (e.key === " ") {
         e.preventDefault();
@@ -450,7 +460,7 @@ function App() {
         } else {
           const randomImg = getRandomImage();
           if (randomImg) {
-            handleImageClick(randomImg);
+            setSelectedImage(randomImg);
           }
         }
       }
@@ -458,27 +468,40 @@ function App() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedImage, paginatedImages]);
+  }, [selectedImage]);
 
-  // Handle hero image navigation
-  const handleHeroImageChange = (direction: "prev" | "next") => {
-    if (!heroImage) return;
+  // Hero section keyboard navigation to gallery or modal
+  useEffect(() => {
+    const handleHeroKeyDown = (e: KeyboardEvent) => {
+      if (document.activeElement === heroRef.current) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          document.getElementById("gallery-grid")?.focus();
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+          e.preventDefault();
+          if (heroImage) {
+            setSelectedImage(heroImage);
+            setCurrentImage(heroImage);
+          }
+        }
+      }
+    };
 
-    const currentIndex = findImageIndex(heroImage);
-    if (currentIndex === -1) return;
-
-    const nextIndex = direction === "next" ? currentIndex + 1 : currentIndex - 1;
-    if (nextIndex < 0 || nextIndex >= paginatedImages.length) return;
-
-    const nextImg = paginatedImages[nextIndex];
-    if (nextImg) {
-      setCurrentImage(nextImg);
-    }
-  };
+    const heroElement = heroRef.current;
+    heroElement?.addEventListener("keydown", handleHeroKeyDown);
+    return () => heroElement?.removeEventListener("keydown", handleHeroKeyDown);
+  }, [heroImage]);
 
   // Scroll to gallery grid
-  const scrollToGallery = () => {
+  const scrollToGrid = () => {
     document.getElementById("gallery-grid")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Handle image click to open modal
+  const handleImageClick = (image: Image) => {
+    setSelectedImage(image);
+    setCurrentImage(image);
+    setLastViewedImage(null);
   };
 
   // Cycle through zoom levels
@@ -490,8 +513,8 @@ function App() {
   };
 
   // Get zoom level label
-  const getZoomLabel = () => {
-    switch (imageZoom) {
+  const getZoomLabel = (zoom: number) => {
+    switch (zoom) {
       case 1:
         return "Original Size";
       case 2:
@@ -502,6 +525,47 @@ function App() {
         return "Original Size";
     }
   };
+
+  // Zoom controls component
+  const ZoomControls = () => (
+    <motion.div
+      className="absolute bottom-4 right-4 z-20 flex gap-2"
+      initial={{ opacity: 1, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1, transition: { delay: 0.3 } }}
+      exit={{ opacity: 1, scale: 0.95 }}
+    >
+      <button
+        onClick={() => setImageZoom(1)}
+        className={`px-3 py-1 rounded-full text-sm transition-colors ${
+          imageZoom === 1
+            ? "bg-white/30 text-white"
+            : "bg-black/30 text-white/70 hover:text-white hover:bg-black/50"
+        }`}
+      >
+        Original
+      </button>
+      <button
+        onClick={() => setImageZoom(2)}
+        className={`px-3 py-1 rounded-full text-sm transition-colors ${
+          imageZoom === 2
+            ? "bg-white/30 text-white"
+            : "bg-black/30 text-white/70 hover:text-white hover:bg-black/50"
+        }`}
+      >
+        Fit Width
+      </button>
+      <button
+        onClick={() => setImageZoom(3)}
+        className={`px-3 py-1 rounded-full text-sm transition-colors ${
+          imageZoom === 3
+            ? "bg-white/30 text-white"
+            : "bg-black/30 text-white/70 hover:text-white hover:bg-black/50"
+        }`}
+      >
+        Fit Height
+      </button>
+    </motion.div>
+  );
 
   // Loading state for initial page
   if (isLoading && currentPage === 1) {
@@ -550,56 +614,173 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <Hero
-        heroImage={heroImage}
-        totalImages={totalImages}
-        onImageClick={handleImageClick}
-        onImageChange={handleHeroImageChange}
-        onScrollToGrid={scrollToGallery}
-        setSelectedImage={setSelectedImage}
-        setCurrentImage={setCurrentImage}
-      />
-      <GalleryGrid
-        images={paginatedImages}
-        heroImage={heroImage}
-        onImageClick={handleImageClick}
-        onNextPage={handleNextPage}
-        onPreviousPage={handlePreviousPage}
-        isLoading={isLoading}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalImages={totalImages}
-        isPaging={isPaging}
-        lastViewedImage={lastViewedImage}
-      />
-      {selectedImage && (
-        <ImageModal
-          image={selectedImage}
-          onClose={handleModalClose}
-          imageZoom={imageZoom}
-          onZoomChange={setImageZoom}
-          imageDimensions={selectedImageDimensions}
-          showPanHint={showPanHint}
-          onDismissPanHint={() => setShowPanHint(false)}
-          zoomLabel={getZoomLabel()}
-          onDoubleClick={handleZoomCycle}
-        />
+    <div className="min-h-screen font-sans">
+      {/* Hero Section */}
+      <header
+        ref={heroRef}
+        tabIndex={0}
+        className="h-screen w-full relative flex flex-col items-center justify-center text-white overflow-hidden"
+      >
+        {heroImage && (
+          <>
+            <img
+              src={heroImage.thumbnail}
+              alt="Loading background"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{
+                filter: "blur(20px) saturate(0.8)",
+                transform: "scale(1.1)",
+                opacity: isHeroLoaded ? 0 : 1,
+                transition: "opacity 0.5s ease",
+              }}
+              loading="lazy"
+            />
+            {heroSrc && (
+              <img
+                src={heroSrc}
+                alt="Main content"
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{
+                  opacity: isHeroLoaded ? 1 : 0,
+                  transition: "opacity ease 1.5s",
+                }}
+                loading="lazy"
+              />
+            )}
+          </>
+        )}
+        <div
+          className="relative z-20 text-center p-4"
+          style={{
+            fontSize: isHeroLoaded ? "8vw" : "10vw",
+            opacity: isHeroLoaded ? 0 : 0.8,
+            transform: isHeroLoaded ? "translateY(0) scale(1)" : "translateY(4px) scale(1.1)",
+            transition:
+              "font-size ease-out .100s 1.3s, transform ease-out .500s 1.3s, opacity ease-out 1s 1.3s",
+          }}
+        >
+          <h1 className="md:text-10xl pb-0 font-bold tracking-tighter">Ephemeral Art</h1>
+          <p className="text-lg md:text-xl text-white/90">
+            A curated collection of {totalImages} textures and patterns.
+          </p>
+        </div>
+        <LoadingProgress isLoaded={isHeroLoaded} />
+        <button
+          onClick={scrollToGrid}
+          className="absolute bottom-10 z-20 text-white/80 hover:text-white transition-colors"
+          style={{
+            opacity: isHeroLoaded ? 1 : 0,
+            transition: "opacity 1s ease 0.5s",
+          }}
+        >
+          <ChevronDown size={48} className="animate-bounce" />
+        </button>
+      </header>
+
+      {/* Gallery Grid */}
+      {isHeroLoaded && galleryImages.length > 0 && (
+        <main
+          id="gallery-grid"
+          ref={galleryGridRef}
+          tabIndex={-1}
+          className="w-full px-2 py-2 min-h-screen"
+        >
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent mb-2" />
+          <SimpleMasonry>
+            {galleryImages.map((image, index) => (
+              <GalleryImage
+                key={`${image.thumbnail}-${index}`}
+                image={image}
+                index={index}
+                onClick={handleImageClick}
+                isSelected={
+                  (!selectedImage &&
+                    lastViewedImage &&
+                    lastViewedImage.thumbnail === image.thumbnail) ||
+                  false
+                }
+                imageRef={index === galleryImages.length - 1 ? lastImageRef : undefined}
+              />
+            ))}
+          </SimpleMasonry>
+          {/* Loading indicator for additional pages */}
+          {isLoading && currentPage > 1 && (
+            <div className="text-center my-8">
+              <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-sm text-white/60">Loading more images...</p>
+            </div>
+          )}
+          {/* Pagination controls */}
+          <div className="text-center mt-8 mb-16 text-white/60">
+            <p>
+              Showing {(currentPage - 1) * 50 + galleryImages.length} of {totalImages} images
+            </p>
+            <div className="mt-4 flex justify-center gap-4">
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1 || isLoading || isPaging}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span className="self-center">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages || isLoading || isPaging}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        </main>
       )}
+
+      {/* Modal */}
+      <AnimatePresence>
+        {selectedImage && (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            onClick={(e) => e.target === e.currentTarget && handleModalClose()}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <ModalImage
+              image={selectedImage}
+              imageZoom={imageZoom}
+              onDoubleClick={handleZoomCycle}
+              imageDimensions={selectedImageDimensions}
+              showPanHint={showPanHint}
+              onDismissPanHint={() => setShowPanHint(false)}
+            />
+            <button
+              onClick={handleModalClose}
+              className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
+            >
+              <X size={24} />
+            </button>
+            <ZoomControls />
+            <motion.div
+              className="absolute top-4 left-4 z-20 px-3 py-2 rounded-lg bg-black/50 text-white text-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              {getZoomLabel(imageZoom)}
+              {selectedImageDimensions && (
+                <div className="text-xs text-white/60 mt-1">
+                  {selectedImageDimensions.width} × {selectedImageDimensions.height}
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
-
-// Debounce function to limit rapid calls
-const debounce = (func: () => void, delay: number) => {
-  let timeoutId: NodeJS.Timeout | null = null;
-  return () => {
-    if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      func();
-      timeoutId = null;
-    }, delay);
-  };
-};
 
 export default App;

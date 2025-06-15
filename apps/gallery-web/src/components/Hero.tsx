@@ -1,8 +1,8 @@
-import { useRef, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { useImageLoader } from "../hooks/use-image-loader";
 import { LoadingProgress } from "./LoadingProgress";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Image {
   full: string;
@@ -12,56 +12,85 @@ interface Image {
 interface HeroProps {
   heroImage: Image | null;
   totalImages: number;
-  onScrollToGrid: () => void;
-  onImageClick: () => void;
+  onImageClick?: (image: Image) => void;
+  onImageChange?: (direction: "prev" | "next") => void;
+  onScrollToGrid?: () => void;
   setSelectedImage: (image: any) => void;
   setCurrentImage: (image: any) => void;
 }
 
-export function Hero({
+export const Hero = ({
   heroImage,
   totalImages,
-  onScrollToGrid,
   onImageClick,
+  onImageChange,
+  onScrollToGrid,
   setSelectedImage,
   setCurrentImage,
-}: HeroProps) {
+}: HeroProps) => {
+  const [touchStart, setTouchStart] = useState<number | null>(null);
   const heroRef = useRef<HTMLDivElement>(null);
+  const { isLoaded } = useImageLoader(heroImage?.full || "");
 
-  // Load hero image
-  const { src: heroSrc, isLoaded: isHeroLoaded } = useImageLoader(
-    heroImage?.thumbnail,
-    heroImage?.full,
-  );
+  // Handle keyboard navigation
+  const handleHeroKeyDown = (e: KeyboardEvent) => {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (onScrollToGrid) onScrollToGrid();
+    } else if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      if (onImageChange) onImageChange("prev");
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      if (onImageChange) onImageChange("next");
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (onImageClick && heroImage) onImageClick(heroImage);
+    }
+  };
 
-  // Hero section keyboard navigation to gallery or modal
   useEffect(() => {
-    const handleHeroKeyDown = (e: KeyboardEvent) => {
-      if (document.activeElement === heroRef.current) {
-        if (e.key === "ArrowDown") {
-          e.preventDefault();
-          document.getElementById("gallery-grid")?.focus();
-        } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-          e.preventDefault();
-          if (heroImage) {
-            setSelectedImage(heroImage);
-            setCurrentImage(heroImage);
-          }
-        }
-      }
-    };
-
     document.addEventListener("keydown", handleHeroKeyDown);
     return () => {
       document.removeEventListener("keydown", handleHeroKeyDown);
     };
-  }, [heroImage, setSelectedImage, setCurrentImage]);
+  }, [heroImage, onImageChange, onScrollToGrid, onImageClick]);
+
+  // Handle touch events for mobile
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    setTouchStart(touch.clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!touchStart) return;
+
+    const touch = e.touches[0];
+    const diff = touchStart - touch.clientX;
+
+    // Only handle horizontal swipes
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && onImageChange) {
+        onImageChange("next");
+      } else if (diff < 0 && onImageChange) {
+        onImageChange("prev");
+      }
+      setTouchStart(null);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setTouchStart(null);
+  };
 
   return (
-    <header
+    <div
       ref={heroRef}
+      className="relative h-screen w-full overflow-hidden bg-black"
       tabIndex={0}
-      className="h-screen w-full relative flex flex-col items-center justify-center text-white overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
     >
       {heroImage && (
         <>
@@ -72,18 +101,18 @@ export function Hero({
             style={{
               filter: "blur(20px) saturate(0.8)",
               transform: "scale(1.1)",
-              opacity: isHeroLoaded ? 0 : 1,
+              opacity: isLoaded ? 0 : 1,
               transition: "opacity 0.5s ease",
             }}
             loading="lazy"
           />
-          {heroSrc && (
+          {heroImage.full && (
             <img
-              src={heroSrc}
+              src={heroImage.full}
               alt="Main content"
               className="absolute inset-0 w-full h-full object-cover"
               style={{
-                opacity: isHeroLoaded ? 1 : 0,
+                opacity: isLoaded ? 1 : 0,
                 transition: "opacity ease 1.5s",
               }}
               loading="lazy"
@@ -94,9 +123,9 @@ export function Hero({
       <div
         className="relative z-20 text-center p-4"
         style={{
-          fontSize: isHeroLoaded ? "8vw" : "10vw",
-          opacity: isHeroLoaded ? 0 : 0.8,
-          transform: isHeroLoaded ? "translateY(0) scale(1)" : "translateY(4px) scale(1.1)",
+          fontSize: isLoaded ? "8vw" : "10vw",
+          opacity: isLoaded ? 0 : 0.8,
+          transform: isLoaded ? "translateY(0) scale(1)" : "translateY(4px) scale(1.1)",
           transition:
             "font-size ease-out .100s 1.3s, transform ease-out .500s 1.3s, opacity ease-out 1s 1.3s",
         }}
@@ -106,17 +135,17 @@ export function Hero({
           A curated collection of {totalImages} textures and patterns.
         </p>
       </div>
-      <LoadingProgress isLoaded={isHeroLoaded} />
+      <LoadingProgress isLoaded={isLoaded} />
       <button
         onClick={onScrollToGrid}
         className="absolute bottom-10 z-20 text-white/80 hover:text-white transition-colors"
         style={{
-          opacity: isHeroLoaded ? 1 : 0,
+          opacity: isLoaded ? 1 : 0,
           transition: "opacity 1s ease 0.5s",
         }}
       >
         <ChevronDown size={48} className="animate-bounce" />
       </button>
-    </header>
+    </div>
   );
-}
+};
