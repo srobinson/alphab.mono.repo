@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+
+/**
+ * World-class database CLI - Clean & Familiar
+ *
+ * Commands like Rails:
+ *   db migrate    - Run pending migrations
+ *   db rollback   - Rollback last migration
+ *   db status     - Show migration status
+ *   db ping       - Test connection
+ */
+
+require('../dist/cli/index.js');

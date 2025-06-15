@@ -1,0 +1,48 @@
+{
+  "name": "@alphab/db-supabase",
+  "version": "0.1.0",
+  "description": "Supabase utilities and common schema patterns for Alphab projects",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "clean": "alphab-clean",
+    "bootstrap": "alphab-bootstrap",
+    "dev": "alphab-dev",
+    "build": "alphab-build",
+    "lint": "alphab-lint",
+    "lint:fix": "alphab-format",
+    "format": "alphab-format",
+    "test": "alphab-test",
+    "test:coverage": "alphab-test-coverage",
+    "type-check": "alphab-type-check"
+  },
+  "dependencies": {
+    "@alphab/logging": "workspace:*",
+    "@supabase/supabase-js": "^2.45.4",
+    "@supabase/postgrest-js": "^1.16.1"
+  },
+  "devDependencies": {
+    "@alphab/scripts": "workspace:*",
+    "@alphab/typescript-config": "workspace:*",
+    "@types/node": "^22.10.2",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.3"
+  },
+  "keywords": [
+    "alphab",
+    "supabase",
+    "database",
+    "utilities",
+    "schema"
+  ],
+  "author": "Alphab <info@alphab.dev>",
+  "license": "MIT"
+}

@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+
+const { createUniversalCommand } = require("../lib/core/universal-command");
+
+// Create and run the lint command
+const lintCommand = createUniversalCommand("lint");
+lintCommand();

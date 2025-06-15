@@ -1,27 +1,44 @@
 {
-  "name": "particle0",
+  "name": "@alphab/monorepo",
   "version": "0.1.0",
-  "description": "Alphab Molecule/Vault POC - Monorepo for AI-powered platform",
+  "description": "Alphab Monorepo - Multi-project workspace with shared packages",
   "private": true,
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
-    "// Turbo scripts": "",
-    "dev": "turbo dev",
-    "dev:all": "concurrently \"pnpm run dev:particle0-backend\" \"pnpm run dev:particle0-frontend\"",
-    "dev:particle0-backend": "cd packages/particle0-backend && python uvicorn particle0_backend.main:app --reload --port 8000",
-    "dev:particle0-frontend": "cd packages/particle0-frontend && pnpm run dev",
+    "reset": "pnpm run clean:deep && pnpm install && pnpm run build && pnpm run lint && pnpm run dev",
+    "\\reset:": "pnpm run clean:deep && pnpm install && pnpm run build && pnpm run lint && pnpm run type-check && pnpm run dev",
+    "clean": "turbo clean",
+    "clean:deep": "turbo clean && rm -rf pnpm-lock.yaml node_modules",
+    "bootstrap": "turbo run bootstrap",
+    "dev": "turbo dev --parallel",
+    "dev:ui": "turbo dev --filter='*-ui'",
+    "dev:api": "turbo dev --filter='!*-ui'",
+    "dev:particle0": "turbo dev --filter='@alphab.project/particle0*'",
+    "dev:gallery": "turbo dev --filter='@alphab.project/gallery-web'",
     "build": "turbo build",
+    "build:ui": "turbo build --filter='*-ui'",
+    "build:api": "turbo build --filter='!*-ui'",
     "lint": "turbo lint",
+    "lint:fix": "turbo lint:fix",
     "format": "turbo format",
+    "type-check": "turbo type-check",
     "test": "turbo test",
-    "// Package-specific scripts": "",
-    "format:auth-backend": "cd packages/auth-backend && black .",
-    "format:particle0-backend": "cd packages/particle0-backend && black .",
-    "test:auth-backend": "cd packages/auth-backend && python -m pytest",
-    "test:auth-frontend": "cd packages/auth-frontend && pnpm run test",
-    "prepare": "husky install"
+    "test:coverage": "turbo test:coverage",
+    "test:watch": "turbo test:watch",
+    "test:ui": "turbo test --filter='*-ui'",
+    "test:api": "turbo test --filter='!*-ui'",
+    "prepare": "husky install",
+    "gallery:fetch-images": "node scripts/get-gallery-images.mjs",
+    "graph": "turbo run build --graph=dependency-graph.html",
+    "dry-run": "turbo run build --dry-run",
+    "db:migrate": "./packages/alphab-db-scripts/bin/alphab-migrate",
+    "db:status": "./packages/alphab-db-scripts/bin/alphab-db-status",
+    "db:rollback": "./packages/alphab-db-scripts/bin/alphab-db-rollback",
+    "db:seed": "./packages/alphab-db-scripts/bin/alphab-db-seed",
+    "db:generate": "./packages/alphab-db-scripts/bin/alphab-db-generate"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -29,6 +46,7 @@
   },
   "packageManager": "pnpm@9.15.0",
   "devDependencies": {
+    "@turbo/gen": "^2.5.4",
     "concurrently": "^8.2.2",
     "husky": "^8.0.3",
     "lint-staged": "^15.1.0",
@@ -36,12 +54,24 @@
   },
   "lint-staged": {
     "packages/**/*.{js,jsx,ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
+      "turbo lint:fix --filter='{packages/**}'",
+      "turbo format --filter='{packages/**}'"
     ],
-    "packages/**/*.py": [
+    "apps/**/*.{js,jsx,ts,tsx}": [
+      "turbo lint:fix --filter='{apps/**}'",
+      "turbo format --filter='{apps/**}'"
+    ],
+    "**/*.py": [
       "black",
       "flake8"
     ]
+  },
+  "turbo": {
+    "extends": [
+      "//"
+    ]
+  },
+  "dependencies": {
+    "vite-plugin-eslint": "^1.8.1"
   }
 }

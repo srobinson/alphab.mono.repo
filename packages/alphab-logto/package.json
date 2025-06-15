@@ -1,0 +1,26 @@
+{
+  "name": "@alphab/logto",
+  "version": "0.1.0",
+  "description": "Reusable Logto authentication package for FastAPI applications",
+  "private": true,
+  "scripts": {
+    "clean": "alphab-clean",
+    "bootstrap": "alphab-bootstrap",
+    "build": "alphab-build",
+    "dev": "alphab-dev",
+    "lint": "alphab-lint",
+    "lint:fix": "alphab-format",
+    "format": "alphab-format",
+    "test": "alphab-test",
+    "test:coverage": "alphab-test-coverage",
+    "type-check": "alphab-type-check"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "devDependencies": {
+    "@alphab/scripts": "workspace:*"
+  }
+}

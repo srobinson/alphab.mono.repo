@@ -1,0 +1,60 @@
+{
+  "name": "@alphab/logto-ui",
+  "version": "0.1.0",
+  "description": "Reusable Logto authentication components for React applications",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "clean": "alphab-clean",
+    "bootstrap": "alphab-bootstrap",
+    "build": "alphab-build",
+    "dev": "alphab-dev",
+    "lint": "alphab-lint",
+    "lint:fix": "alphab-format",
+    "format": "alphab-format",
+    "preview": "echo \"No preview for library package\"",
+    "test": "alphab-test",
+    "test:coverage": "alphab-test-coverage",
+    "test:watch": "vitest --watch",
+    "type-check": "alphab-type-check"
+  },
+  "keywords": [
+    "alphab",
+    "authentication",
+    "logto",
+    "react"
+  ],
+  "author": "Alphab <info@alphab.dev>",
+  "license": "MIT",
+  "peerDependencies": {
+    "react": ">=19.0.0",
+    "react-dom": ">=19.0.0",
+    "react-router-dom": ">=6.0.0"
+  },
+  "dependencies": {
+    "@alphab/logging-ui": "workspace:*",
+    "jwt-decode": "^4.0.0",
+    "tailwindcss": ">=3.0.0",
+    "tailwindcss-animate": "^1.0.7"
+  },
+  "devDependencies": {
+    "@alphab/eslint-config": "workspace:*",
+    "@alphab/scripts": "workspace:*",
+    "@alphab/typescript-config": "workspace:*",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/react": "^19.1.1",
+    "@types/react-dom": "^19.1.1",
+    "eslint": "^9.28.0",
+    "jsdom": "^26.1.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^6.30.0",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.3"
+  }
+}

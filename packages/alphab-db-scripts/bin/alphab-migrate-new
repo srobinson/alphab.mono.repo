@@ -1,0 +1,14 @@
+#!/usr/bin/env node
+
+const path = require("path");
+
+// Import the new clean CLI
+const cliPath = path.join(__dirname, "../dist/cli/index-new.js");
+
+try {
+  require(cliPath);
+} catch (error) {
+  console.error("Failed to load CLI:", error.message);
+  console.error("Make sure to run 'pnpm run build' first");
+  process.exit(1);
+}

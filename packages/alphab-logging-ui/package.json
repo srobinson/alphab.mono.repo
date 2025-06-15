@@ -1,0 +1,46 @@
+{
+  "name": "@alphab/logging-ui",
+  "version": "0.1.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "clean": "alphab-clean",
+    "bootstrap": "alphab-bootstrap",
+    "build": "alphab-build",
+    "dev": "alphab-dev",
+    "test": "alphab-test",
+    "test:coverage": "alphab-test-coverage",
+    "lint": "alphab-lint",
+    "lint:fix": "alphab-format",
+    "format": "alphab-format",
+    "type-check": "alphab-type-check",
+    "preview": "echo \"No preview for library package\""
+  },
+  "keywords": [
+    "logging",
+    "frontend",
+    "typescript",
+    "structured-logging",
+    "browser"
+  ],
+  "author": "Alphab <info@alphab.dev>",
+  "license": "MIT",
+  "devDependencies": {
+    "@alphab/eslint-config": "workspace:*",
+    "@alphab/scripts": "workspace:*",
+    "@alphab/typescript-config": "workspace:*",
+    "@types/node": "^22.10.2",
+    "@vitest/coverage-v8": "^3.2.3",
+    "eslint": "^9.28.0",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

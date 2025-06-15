@@ -1,5 +1,9 @@
 # particle0
 
+```
+make beautiful things
+```
+
 A next-generation AI-powered platform with a microservices architecture, featuring a Python FastAPI backend and a React + TypeScript frontend. This monorepo contains the Alphab Molecule/Vault POC implementation.
 
 ## Features
@@ -13,12 +17,10 @@ A next-generation AI-powered platform with a microservices architecture, featuri
 
 ```
 particle0/
-├── frontend/                  # Original React + TypeScript application
-├── backend/                   # Original Python FastAPI application
 ├── packages/                  # Reusable packages
 │   ├── auth-backend/          # Reusable authentication backend package
 │   ├── auth-frontend/         # Reusable authentication frontend package
-│   ├── particle0-backend/     # Migrated backend using auth-backend
+│   ├── particle0-api/     # Migrated backend using auth-backend
 │   └── particle0-frontend/    # Migrated frontend using auth-frontend
 ├── .vscode/                   # VSCode workspace settings
 ├── .github/                   # GitHub Actions workflows
@@ -44,7 +46,17 @@ particle0/
    cd particle0
    ```
 
-2. **Frontend Setup:**
+2. **Quick Start (Recommended):**
+
+   ```bash
+   # Bootstrap everything automatically
+   pnpm run bootstrap
+
+   # Start development
+   pnpm run dev:packages
+   ```
+
+3. **Manual Setup:**
 
    ```bash
    # From project root
@@ -57,7 +69,7 @@ particle0/
    pnpm run dev:packages
    ```
 
-3. **Backend Setup:**
+4. **Backend Setup:**
 
    ```bash
    cd backend
@@ -83,7 +95,7 @@ particle0/
 
    # Or for the new backend package
    # cd ..
-   # pnpm run dev:particle0-backend
+   # pnpm run dev:particle0-api
    ```
 
    The backend API will be available at:
@@ -91,7 +103,7 @@ particle0/
    - API: http://localhost:8000
    - Interactive documentation: http://localhost:8000/docs
 
-4. **Running both concurrently:**
+5. **Running both concurrently:**
    ```bash
    # From project root after setting up backend venv
    pnpm run dev:all
@@ -105,8 +117,34 @@ particle0/
 - `pnpm run dev:packages` - Run both new frontend and backend packages concurrently
 - `pnpm run lint` - Lint all code
 - `pnpm run format` - Format all code
-- `pnpm run build` - Build all packages
+- `pnpm run build` - Build all packages with smart state detection
 - `pnpm run test` - Test all packages
+- `pnpm run bootstrap` - Bootstrap all packages with automatic dependency installation
+- `pnpm run clean` - Clean build artifacts
+- `pnpm run clean --deep` - Deep clean including pnpm-lock.yaml and node_modules
+
+### Smart Build System
+
+The project now includes an intelligent build system that:
+
+- 🧠 **Detects repository state** and provides helpful suggestions
+- 🔧 **Auto-fixes common issues** like missing dependencies
+- 💡 **Provides actionable advice** when problems are detected
+- 🎯 **Works consistently** across all package types
+
+Example output:
+
+```bash
+🚀 Running build...
+
+🔍 Repository State Issues Detected:
+  ❌ Root pnpm-lock.yaml is missing
+
+💡 Suggestions:
+  💡 Run 'pnpm install' from the root directory
+
+📦 Package: @alphab/logging-ui (typescript-library)
+```
 
 ### Frontend
 
@@ -179,11 +217,11 @@ A reusable authentication package for React applications using Logto as the auth
 
 [View auth-frontend documentation](packages/auth-frontend/README.md)
 
-### particle0-backend
+### particle0-api
 
 The backend service for the Particle0 application, built with FastAPI and using the `auth-backend` package.
 
-[View particle0-backend documentation](packages/particle0-backend/README.md)
+[View particle0-api documentation](packages/particle0-api/README.md)
 
 ### particle0-frontend
 
@@ -229,7 +267,7 @@ particle0/
 ├── packages/                  # All code lives here
 │   ├── auth-backend/          # Reusable authentication backend package
 │   ├── auth-frontend/         # Reusable authentication frontend package
-│   ├── particle0-backend/     # Main backend application
+│   ├── particle0-api/     # Main backend application
 │   └── particle0-frontend/    # Main frontend application
 ├── DOCS/                      # Project documentation
 └── ... (configuration files)
@@ -238,3 +276,49 @@ particle0/
 ## License
 
 [License information]
+
+## Advanced Usage
+
+### Test specific packages
+
+```bash
+pnpm run test --filter="@alphab/logging*"
+```
+
+### Test by type
+
+```bash
+# Test UI packages only
+pnpm run test --filter="*-ui"
+
+# Test non-UI packages
+pnpm run test --filter="!*-ui"
+```
+
+### Test specific apps
+
+```bash
+pnpm run test --filter="@alphab.project/particle0*"
+```
+
+### Bootstrap with dev dependencies for Python packages
+
+```bash
+pnpm run bootstrap --with-dev --filter="@alphab/logging" --filter="@alphab/http-client"
+```
+
+### Troubleshooting
+
+If you encounter dependency issues:
+
+```bash
+# Deep clean and rebuild everything
+pnpm run clean --deep
+pnpm run bootstrap
+
+# Or for specific packages
+pnpm run clean --filter="@alphab/logging-ui"
+pnpm run bootstrap --filter="@alphab/logging-ui"
+```
+
+The smart build system will automatically detect and suggest fixes for common issues.
