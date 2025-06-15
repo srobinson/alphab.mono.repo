@@ -74,6 +74,11 @@ export function useImageGallery(): UseImageGalleryReturn {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPaging, setIsPaging] = useState(false);
+  const [paginatedImages, setPaginatedImages] = useState<Image[]>([]);
+  const [imageDimensions, setImageDimensions] = useState<
+    Map<string, { width: number; height: number }>
+  >(new Map());
   const pageSize = 50;
   const [loadedImages, setLoadedImages] = useState<Image[]>([]);
 
@@ -110,22 +115,20 @@ export function useImageGallery(): UseImageGalleryReturn {
     };
   }, [galleryData, currentPage]);
 
-  const paginatedImages = loadedImages;
-
   const totalPages = useMemo(
     () => (galleryData ? Math.ceil(galleryData.images.length / pageSize) : 0),
     [galleryData],
   );
 
   const currentImage = useMemo<Image | null>(() => {
-    return paginatedImages.length > 0 && currentIndex >= 0 && currentIndex < paginatedImages.length
-      ? paginatedImages[currentIndex]
+    return loadedImages.length > 0 && currentIndex >= 0 && currentIndex < loadedImages.length
+      ? loadedImages[currentIndex]
       : null;
-  }, [paginatedImages, currentIndex]);
+  }, [loadedImages, currentIndex]);
 
   const canGoNext = useMemo(
-    () => currentIndex < paginatedImages.length - 1 || currentPage < totalPages,
-    [paginatedImages.length, currentIndex, currentPage, totalPages],
+    () => currentIndex < loadedImages.length - 1 || currentPage < totalPages,
+    [loadedImages.length, currentIndex, currentPage, totalPages],
   );
   const canGoPrevious = useMemo(
     () => currentIndex > 0 || currentPage > 1,
@@ -163,40 +166,28 @@ export function useImageGallery(): UseImageGalleryReturn {
   }, []);
 
   const nextImage = useCallback((): Image | null => {
-    if (paginatedImages.length === 0) return null;
-    if (currentIndex + 1 >= paginatedImages.length && currentPage < totalPages) {
+    if (loadedImages.length === 0) return null;
+    if (currentIndex + 1 >= loadedImages.length && currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
       setCurrentIndex(0);
-      return paginatedImages[0];
+      return loadedImages[0];
     }
-    const nextIndex = (currentIndex + 1) % paginatedImages.length;
+    const nextIndex = (currentIndex + 1) % loadedImages.length;
     setCurrentIndex(nextIndex);
-    return paginatedImages[nextIndex];
-  }, [paginatedImages, currentIndex, currentPage, totalPages]);
+    return loadedImages[nextIndex];
+  }, [loadedImages, currentIndex, currentPage, totalPages]);
 
   const previousImage = useCallback((): Image | null => {
-    if (paginatedImages.length === 0) return null;
+    if (loadedImages.length === 0) return null;
     if (currentIndex === 0 && currentPage > 1) {
       setCurrentPage(currentPage - 1);
       setCurrentIndex(pageSize - 1);
-      return paginatedImages[pageSize - 1];
+      return loadedImages[pageSize - 1];
     }
-    const prevIndex = currentIndex === 0 ? paginatedImages.length - 1 : currentIndex - 1;
+    const prevIndex = currentIndex === 0 ? loadedImages.length - 1 : currentIndex - 1;
     setCurrentIndex(prevIndex);
-    return paginatedImages[prevIndex];
-  }, [paginatedImages, currentIndex, currentPage]);
-
-  const goToImage = useCallback(
-    (index: number): Image | null => {
-      if (images.length === 0 || index < 0 || index >= images.length) return null;
-      const targetPage = Math.floor(index / pageSize) + 1;
-      const pageIndex = index % pageSize;
-      setCurrentPage(targetPage);
-      setCurrentIndex(pageIndex);
-      return images[index];
-    },
-    [images, pageSize],
-  );
+    return loadedImages[prevIndex];
+  }, [loadedImages, currentIndex, currentPage]);
 
   const getRandomImage = useCallback((): Image | null => {
     if (images.length === 0) return null;
@@ -280,21 +271,80 @@ export function useImageGallery(): UseImageGalleryReturn {
     }
   }, [currentPage]);
 
+  // Navigate to next/previous image with pagination
+  const navigateImage = (direction: number) => {
+    const nextIndex = currentIndex + direction;
+
+    // If we're at the end of the current page and trying to go forward
+    if (direction > 0 && nextIndex >= loadedImages.length) {
+      // If there are more pages, load the next page
+      if (currentPage < totalPages && !isLoading && !isPaging) {
+        setIsPaging(true);
+        nextPage();
+        return null; // Return null to indicate we're loading a new page
+      }
+      return null; // No more pages
+    }
+
+    // If we're at the start of the current page and trying to go backward
+    if (direction < 0 && nextIndex < 0) {
+      // If we're not on the first page, go to previous page
+      if (currentPage > 1 && !isLoading && !isPaging) {
+        setIsPaging(true);
+        previousPage();
+        return null; // Return null to indicate we're loading a new page
+      }
+      return null; // On first page
+    }
+
+    // If we're within the current page's bounds, update the image
+    if (nextIndex >= 0 && nextIndex < loadedImages.length) {
+      const nextImg = loadedImages[nextIndex];
+      if (nextImg) {
+        setCurrentIndex(nextIndex);
+        return nextImg;
+      }
+    }
+
+    return null;
+  };
+
+  // Update current image when new page loads
+  useEffect(() => {
+    if (isPaging && loadedImages.length > 0) {
+      const currentImage = loadedImages[currentIndex];
+      if (!currentImage) {
+        // If current image is not in the new page, select the first image
+        setCurrentIndex(0);
+      }
+    }
+  }, [loadedImages, currentIndex, isPaging]);
+
+  // Go to a specific image index
+  const goToImage = (index: number): Image | null => {
+    if (index >= 0 && index < loadedImages.length) {
+      setCurrentIndex(index);
+      return loadedImages[index];
+    }
+    return null;
+  };
+
   return {
     images,
-    paginatedImages,
+    paginatedImages: loadedImages,
     currentImage,
     currentIndex,
     currentPage,
     totalPages,
-    totalImages: images.length,
+    totalImages: galleryData?.totalImages || 0,
     isLoading,
     error,
     galleryData,
-    nextImage,
-    previousImage,
+    nextImage: () => navigateImage(1),
+    previousImage: () => navigateImage(-1),
     goToImage,
     getRandomImage,
+    reshuffleGallery,
     getCurrentImage,
     setCurrentImage,
     findImageIndex,
@@ -302,7 +352,6 @@ export function useImageGallery(): UseImageGalleryReturn {
     resetToFirst,
     canGoNext,
     canGoPrevious,
-    reshuffleGallery,
     nextPage,
     previousPage,
   };

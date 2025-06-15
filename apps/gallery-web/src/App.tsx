@@ -8,6 +8,7 @@ import { SimpleMasonry } from "./hooks/use-masonary-hook";
 import { Hero } from "./components/Hero";
 import { GalleryGrid } from "./components/GalleryGrid";
 import { ImageModal } from "./components/ImageModal";
+import { ImageCounter } from "./components/ImageCounter";
 import "./gallery.css";
 
 // Gallery image component for rendering individual images in the masonry grid
@@ -402,13 +403,7 @@ function App() {
   const changeImage = (direction: number) => {
     if (!selectedImage) return;
 
-    const currentSelectedIndex = findImageIndex(selectedImage);
-    if (currentSelectedIndex === -1) return;
-
-    const nextIndex = currentSelectedIndex + direction;
-    if (nextIndex < 0 || nextIndex >= paginatedImages.length) return;
-
-    const nextImg = paginatedImages[nextIndex];
+    const nextImg = direction > 0 ? nextImage() : previousImage();
     if (nextImg) {
       setSelectedImage(nextImg);
       setCurrentImage(nextImg);
@@ -420,6 +415,7 @@ function App() {
     // Reset scroll position when opening modal
     window.scrollTo(0, 0);
     setSelectedImage(image);
+    setCurrentImage(image);
   };
 
   // Handle modal close
@@ -510,6 +506,20 @@ function App() {
     }
   };
 
+  // Update selected image when new page loads
+  useEffect(() => {
+    if (selectedImage && isPaging) {
+      const currentIndex = findImageIndex(selectedImage);
+      if (currentIndex === -1) {
+        // If the current image is not in the new page, select the first image
+        if (paginatedImages.length > 0) {
+          setSelectedImage(paginatedImages[0]);
+          setCurrentImage(paginatedImages[0]);
+        }
+      }
+    }
+  }, [paginatedImages, selectedImage, isPaging]);
+
   // Loading state for initial page
   if (isLoading && currentPage === 1) {
     return (
@@ -583,19 +593,26 @@ function App() {
       />
       <AnimatePresence>
         {selectedImage && (
-          <ImageModal
-            image={selectedImage}
-            onClose={handleModalClose}
-            imageZoom={imageZoom}
-            onDoubleClick={handleZoomCycle}
-            imageDimensions={selectedImageDimensions}
-            showPanHint={showPanHint}
-            onDismissPanHint={() => setShowPanHint(false)}
-            zoomLabel={getZoomLabel()}
-            onZoomChange={setImageZoom}
-            onNextImage={handleNextImage}
-            onPreviousImage={handlePreviousImage}
-          />
+          <>
+            <ImageModal
+              image={selectedImage}
+              onClose={handleModalClose}
+              imageZoom={imageZoom}
+              onDoubleClick={handleZoomCycle}
+              imageDimensions={selectedImageDimensions}
+              showPanHint={showPanHint}
+              onDismissPanHint={() => setShowPanHint(false)}
+              zoomLabel={getZoomLabel()}
+              onZoomChange={setImageZoom}
+              onNextImage={handleNextImage}
+              onPreviousImage={handlePreviousImage}
+            />
+            <ImageCounter
+              currentIndex={currentIndex}
+              totalImages={totalImages}
+              isLoading={isPaging}
+            />
+          </>
         )}
       </AnimatePresence>
     </div>

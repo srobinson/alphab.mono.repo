@@ -90,9 +90,6 @@ export function ImageModal({
 
   // Calculate zoom styles based on zoom level
   const getZoomStyles = (zoom: number) => {
-    console.log("imageDimensions", imageDimensions);
-    console.log("zoom", zoom);
-
     if (!imageDimensions) {
       switch (zoom) {
         case 1:
