@@ -399,45 +399,65 @@ function App() {
     previousPage();
   };
 
-  // Navigate to next/previous image in modal
-  const changeImage = (direction: number) => {
-    if (!selectedImage) return;
+  // Modal open if selectedImage is not null
+  const isModalOpen = !!selectedImage;
 
-    const nextImg = direction > 0 ? nextImage() : previousImage();
-    if (nextImg) {
-      setSelectedImage(nextImg);
-      setCurrentImage(nextImg);
+  // Find index of selectedImage in paginatedImages
+  const selectedIndex = selectedImage
+    ? paginatedImages.findIndex((img) => img.thumbnail === selectedImage.thumbnail)
+    : -1;
+
+  // Modal navigation
+  const handleNextImage = () => {
+    if (selectedIndex === -1) return;
+    if (selectedIndex + 1 < paginatedImages.length) {
+      setSelectedImage(paginatedImages[selectedIndex + 1]);
+    } else if (paginatedImages.length < totalImages) {
+      // At end, fetch next page
+      nextPage();
+    }
+  };
+  const handlePreviousImage = () => {
+    if (selectedIndex > 0) {
+      setSelectedImage(paginatedImages[selectedIndex - 1]);
     }
   };
 
+  // Keyboard navigation for modal
+  useEffect(() => {
+    if (!isModalOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedImage(null);
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        handleNextImage();
+      } else if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        handlePreviousImage();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isModalOpen, selectedIndex, paginatedImages.length, totalImages]);
+
+  // When new images are loaded and user was at end, auto-advance
+  useEffect(() => {
+    if (!isModalOpen || selectedIndex !== paginatedImages.length - 2) return;
+    if (paginatedImages.length > selectedIndex + 1) {
+      setSelectedImage(paginatedImages[selectedIndex + 1]);
+    }
+  }, [paginatedImages.length]);
+
   // Handle image click to open modal
   const handleImageClick = (image: Image) => {
-    // Reset scroll position when opening modal
-    window.scrollTo(0, 0);
     setSelectedImage(image);
-    setCurrentImage(image);
   };
 
   // Handle modal close
   const handleModalClose = () => {
-    if (selectedImage) {
-      setLastViewedImage(selectedImage);
-    }
+    if (selectedImage) setLastViewedImage(selectedImage);
     setSelectedImage(null);
-    // Only call setCurrentImage if heroImage exists
-    if (heroImage) {
-      setCurrentImage(heroImage);
-    }
-  };
-
-  // Handle next image in modal
-  const handleNextImage = () => {
-    changeImage(1);
-  };
-
-  // Handle previous image in modal
-  const handlePreviousImage = () => {
-    changeImage(-1);
   };
 
   // Hero section keyboard navigation to gallery or modal
@@ -574,9 +594,8 @@ function App() {
         onImageClick={handleImageClick}
         onImageChange={handleHeroImageChange}
         onScrollToGrid={scrollToGallery}
-        setSelectedImage={setSelectedImage}
         setCurrentImage={setCurrentImage}
-        isModalOpen={!!selectedImage}
+        isModalOpen={isModalOpen}
       />
       <GalleryGrid
         images={paginatedImages}
@@ -592,7 +611,7 @@ function App() {
         lastViewedImage={lastViewedImage}
       />
       <AnimatePresence>
-        {selectedImage && (
+        {isModalOpen && selectedImage && (
           <>
             <ImageModal
               image={selectedImage}
@@ -608,7 +627,7 @@ function App() {
               onPreviousImage={handlePreviousImage}
             />
             <ImageCounter
-              currentIndex={currentIndex}
+              currentIndex={selectedIndex + 1}
               totalImages={totalImages}
               isLoading={isPaging}
             />

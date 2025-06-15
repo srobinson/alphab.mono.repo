@@ -15,8 +15,7 @@ interface HeroProps {
   onImageClick?: (image: Image) => void;
   onImageChange?: (direction: "prev" | "next") => void;
   onScrollToGrid?: () => void;
-  setSelectedImage: (image: any) => void;
-  setCurrentImage: (image: any) => void;
+  setCurrentImage: (image: Image) => void;
   isModalOpen?: boolean;
 }
 
@@ -26,7 +25,6 @@ export const Hero = ({
   onImageClick,
   onImageChange,
   onScrollToGrid,
-  setSelectedImage,
   setCurrentImage,
   isModalOpen = false,
 }: HeroProps) => {
@@ -36,16 +34,14 @@ export const Hero = ({
 
   // Handle keyboard navigation
   const handleHeroKeyDown = (e: KeyboardEvent) => {
-    // Only handle keyboard events if modal is not open
     if (isModalOpen) return;
-
     if (e.key === "ArrowDown") {
       e.preventDefault();
       if (onScrollToGrid) onScrollToGrid();
     } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
       e.preventDefault();
       if (heroImage) {
-        setSelectedImage(heroImage);
+        if (onImageClick) onImageClick(heroImage);
         setCurrentImage(heroImage);
       }
     } else if (e.key === "Enter" || e.key === " ") {
