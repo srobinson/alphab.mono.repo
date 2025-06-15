@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 
+// Simple masonry layout component that distributes children into columns
 interface SimpleMasonryProps {
   children: React.ReactNode[];
   columns?: number;
 }
 
 export function SimpleMasonry({ children, columns = 4 }: SimpleMasonryProps) {
+  // Determine number of columns based on window width
   const getColumns = () => {
     const width = window.innerWidth;
     if (width < 500) return 1;
@@ -16,12 +18,14 @@ export function SimpleMasonry({ children, columns = 4 }: SimpleMasonryProps) {
 
   const [cols, setCols] = useState(getColumns());
 
+  // Update columns on window resize
   useEffect(() => {
     const handleResize = () => setCols(getColumns());
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Distribute children into columns
   const columnArrays = Array.from({ length: cols }, () => [] as React.ReactNode[]);
 
   children.forEach((child, index) => {

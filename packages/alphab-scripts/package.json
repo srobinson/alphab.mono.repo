@@ -22,7 +22,8 @@
   ],
   "dependencies": {
     "chalk": "^4.1.2",
-    "cross-spawn": "^7.0.3"
+    "cross-spawn": "^7.0.3",
+    "execa": "^9.6.0"
   },
   "keywords": [
     "alphab",
@@ -31,5 +32,8 @@
     "scripts"
   ],
   "author": "Alphab <info@alphab.dev>",
-  "license": "MIT"
+  "license": "MIT",
+  "meta": {
+    "type": "config"
+  }
 }

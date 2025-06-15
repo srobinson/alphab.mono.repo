@@ -47,5 +47,8 @@
     "scripts"
   ],
   "author": "Alphab <info@alphab.dev>",
-  "license": "MIT"
+  "license": "MIT",
+  "meta": {
+    "type": "node-lib"
+  }
 }

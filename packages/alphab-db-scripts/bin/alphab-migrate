@@ -1,6 +1,14 @@
 #!/usr/bin/env node
 
-// Database CLI - familiar commands like Rails, Laravel, Prisma
-// Usage: db migrate, db rollback, db status, etc.
+const path = require("path");
 
-require("../dist/cli/index.js");
+// Import the new clean CLI
+const cliPath = path.join(__dirname, "../dist/cli/index-new.js");
+
+try {
+  require(cliPath);
+} catch (error) {
+  console.error("Failed to load CLI:", error.message);
+  console.error("Make sure to run 'pnpm run build' first");
+  process.exit(1);
+}

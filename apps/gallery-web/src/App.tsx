@@ -7,6 +7,7 @@ import { useImageGallery } from "./hooks/use-image-gallery";
 import { SimpleMasonry } from "./hooks/use-masonary-hook";
 import "./gallery.css";
 
+// Gallery image component for rendering individual images in the masonry grid
 const GalleryImage = ({
   image,
   index,
@@ -20,7 +21,7 @@ const GalleryImage = ({
 }) => {
   const imageRef = useRef<HTMLDivElement>(null);
 
-  // Scroll into view when selected
+  // Scroll selected image into view
   useEffect(() => {
     if (isSelected && imageRef.current) {
       imageRef.current.scrollIntoView({
@@ -48,17 +49,19 @@ const GalleryImage = ({
         src={image.thumbnail}
         alt="Gallery background"
         className="gallery-image gallery-image-bg w-full"
+        loading="lazy"
       />
       <img
         src={image.thumbnail}
         alt="Gallery foreground"
         className="gallery-image gallery-image-fg w-full"
+        loading="lazy"
       />
     </motion.div>
   );
 };
 
-// Single Modal Image Component with Three Zoom States and Panning
+// Modal image component with zoom and pan functionality
 const ModalImage = ({
   image,
   imageZoom,
@@ -76,31 +79,28 @@ const ModalImage = ({
 }) => {
   const { src: loadedSrc, isLoaded } = useImageLoader(image.thumbnail, image.full);
 
-  // Pan state
   const [isPanning, setIsPanning] = useState(false);
   const panX = useMotionValue(0);
   const panY = useMotionValue(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Reset pan when zoom changes or image changes
+  // Reset pan position on zoom or image change
   useEffect(() => {
     panX.set(0);
     panY.set(0);
   }, [imageZoom, image.full, panX, panY]);
 
-  // Check if panning should be enabled
+  // Determine if panning is enabled based on image size and zoom level
   const isPanningEnabled = useMemo(() => {
-    if (!imageDimensions || imageZoom === 3) return false; // No panning for fit height
+    if (!imageDimensions || imageZoom === 3) return false;
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
     const { width: imgWidth, height: imgHeight } = imageDimensions;
 
     if (imageZoom === 1) {
-      // Original size - enable panning if image is larger than viewport
       return imgWidth > viewportWidth || imgHeight > viewportHeight;
     } else if (imageZoom === 2) {
-      // Fit width - enable panning if scaled height is larger than viewport
       const scaledHeight = (imgHeight * viewportWidth) / imgWidth;
       return scaledHeight > viewportHeight;
     }
@@ -108,10 +108,9 @@ const ModalImage = ({
     return false;
   }, [imageDimensions, imageZoom]);
 
-  // Calculate styles for each zoom level with pan constraints
+  // Calculate zoom styles based on zoom level
   const getZoomStyles = (zoom: number) => {
     if (!imageDimensions) {
-      // Fallback if no dimensions available
       switch (zoom) {
         case 1:
           return { width: "auto", height: "auto", maxWidth: "90vw", maxHeight: "90vh" };
@@ -129,34 +128,31 @@ const ModalImage = ({
     const viewportHeight = window.innerHeight;
 
     switch (zoom) {
-      case 1: // Original size
+      case 1:
         return {
           width: imgWidth,
           height: imgHeight,
           maxWidth: "unset",
           maxHeight: "unset",
         };
-
-      case 2: // Fit width (100vw)
+      case 2:
         return {
           width: viewportWidth,
           height: (imgHeight * viewportWidth) / imgWidth,
           maxWidth: "unset",
           maxHeight: "unset",
         };
-
-      case 3: // Fit height (100vh)
+      case 3:
         return {
           width: (imgWidth * viewportHeight) / imgHeight,
           height: viewportHeight,
         };
-
       default:
         return { width: "unset", height: "unset" };
     }
   };
 
-  // Calculate pan constraints
+  // Calculate panning constraints
   const getPanConstraints = () => {
     if (!imageDimensions || !isPanningEnabled) {
       return { left: 0, right: 0, top: 0, bottom: 0 };
@@ -197,7 +193,6 @@ const ModalImage = ({
       ref={containerRef}
       className="relative flex items-center justify-center w-full h-full overflow-hidden"
     >
-      {/* Background blur image */}
       <img
         src={image.thumbnail}
         alt="Loading background"
@@ -208,8 +203,6 @@ const ModalImage = ({
           opacity: 1,
         }}
       />
-
-      {/* Main high-res image with smooth zoom transitions and panning */}
       <motion.img
         src={loadedSrc}
         alt="Full resolution"
@@ -225,7 +218,7 @@ const ModalImage = ({
         animate={getZoomStyles(imageZoom)}
         transition={{
           duration: 0.5,
-          ease: [0.25, 0.1, 0.25, 1], // Custom bezier for smooth feel
+          ease: [0.25, 0.1, 0.25, 1],
           type: "tween",
         }}
         onDoubleClick={onDoubleClick}
@@ -237,10 +230,7 @@ const ModalImage = ({
         onDragEnd={() => setIsPanning(false)}
         whileDrag={{ scale: 0.98 }}
       />
-
       <LoadingProgress isLoaded={isLoaded} />
-
-      {/* Pan hint for large images */}
       {isPanningEnabled && isLoaded && showPanHint && (
         <motion.div
           className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-10 px-3 py-2 rounded-lg bg-black/70 text-white text-sm pointer-events-auto flex items-center gap-2"
@@ -263,6 +253,7 @@ const ModalImage = ({
   );
 };
 
+// Loading progress bar for images
 function LoadingProgress({ isLoaded }: { isLoaded: boolean }) {
   return (
     <AnimatePresence>
@@ -299,8 +290,9 @@ interface Image {
 }
 
 function App() {
+  // Gallery hook providing paginated images and navigation
   const {
-    images,
+    paginatedImages,
     currentIndex,
     totalImages,
     isLoading,
@@ -312,27 +304,37 @@ function App() {
     getRandomImage,
     findImageIndex,
     getImageDimensions,
+    currentPage,
+    totalPages,
+    nextPage,
+    previousPage,
   } = useImageGallery();
 
   const [selectedImage, setSelectedImage] = useState<Image | null>(null);
-  const [lastViewedImage, setLastViewedImage] = useState<Image | null>(null); // Track last viewed image
+  const [lastViewedImage, setLastViewedImage] = useState<Image | null>(null);
   const [imageZoom, setImageZoom] = useState(2);
   const [direction, setDirection] = useState(0);
   const [showPanHint, setShowPanHint] = useState(true);
+  const [isPaging, setIsPaging] = useState(false); // Lock to prevent concurrent page changes
+  const heroRef = useRef<HTMLDivElement>(null);
+  const scrollPositionRef = useRef<number>(0); // Store scroll position
 
+  // Select first image as hero image
   const heroImage = useMemo(() => {
-    return images.length > 0 ? images[0] : null;
-  }, [images]);
+    return paginatedImages.length > 0 ? paginatedImages[0] : null;
+  }, [paginatedImages]);
 
+  // Load hero image
   const { src: heroSrc, isLoaded: isHeroLoaded } = useImageLoader(
     heroImage?.thumbnail,
     heroImage?.full,
   );
 
+  // Filter out hero image from gallery
   const galleryImages = useMemo(() => {
-    if (!heroImage) return images || [];
-    return images.filter((img) => img.thumbnail !== heroImage.thumbnail);
-  }, [images, heroImage]);
+    if (!heroImage) return paginatedImages || [];
+    return paginatedImages.filter((img) => img.thumbnail !== heroImage.thumbnail);
+  }, [paginatedImages, heroImage]);
 
   // Get dimensions for selected image
   const selectedImageDimensions = useMemo(() => {
@@ -340,6 +342,87 @@ function App() {
     return getImageDimensions(selectedImage);
   }, [selectedImage, getImageDimensions]);
 
+  // Debounce function to limit rapid calls
+  const debounce = (func: () => void, delay: number) => {
+    let timeoutId: NodeJS.Timeout | null = null;
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        func();
+        timeoutId = null;
+      }, delay);
+    };
+  };
+
+  // Infinite scroll: Load next page when near bottom
+  useEffect(() => {
+    if (currentPage >= totalPages || isLoading || isPaging) {
+      console.log("Infinite scroll check: ", { currentPage, totalPages, isLoading, isPaging });
+      return;
+    }
+
+    const handleScroll = () => {
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const pageHeight = document.documentElement.scrollHeight;
+      const triggerDistance = 500;
+
+      console.log("Scroll check: ", {
+        scrollPosition,
+        pageHeight,
+        distanceFromBottom: pageHeight - scrollPosition,
+      });
+
+      if (pageHeight - scrollPosition < triggerDistance) {
+        console.log("Triggering next page from scroll...");
+        setIsPaging(true);
+        scrollPositionRef.current = window.scrollY; // Save scroll position
+        nextPage();
+      }
+    };
+
+    const debouncedScroll = debounce(handleScroll, 200);
+    window.addEventListener("scroll", debouncedScroll);
+
+    return () => {
+      window.removeEventListener("scroll", debouncedScroll);
+    };
+  }, [currentPage, totalPages, isLoading, isPaging, nextPage]);
+
+  // Restore scroll position after page change
+  useEffect(() => {
+    if (!isPaging) return;
+    console.log("Restoring scroll position to: ", scrollPositionRef.current);
+    window.scrollTo(0, scrollPositionRef.current);
+    setIsPaging(false); // Release lock
+  }, [paginatedImages]);
+
+  // Handle next page button click
+  const handleNextPage = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (currentPage >= totalPages || isLoading || isPaging) {
+      console.log("Next button blocked: ", { currentPage, totalPages, isLoading, isPaging });
+      return;
+    }
+    console.log("Next button clicked, going to page: ", currentPage + 1);
+    setIsPaging(true);
+    scrollPositionRef.current = window.scrollY;
+    nextPage();
+  };
+
+  // Handle previous page button click
+  const handlePreviousPage = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (currentPage <= 1 || isLoading || isPaging) {
+      console.log("Previous button blocked: ", { currentPage, isLoading, isPaging });
+      return;
+    }
+    console.log("Previous button clicked, going to page: ", currentPage - 1);
+    setIsPaging(true);
+    scrollPositionRef.current = window.scrollY;
+    previousPage();
+  };
+
+  // Navigate to next/previous image in modal
   const changeImage = (direction: number) => {
     if (!selectedImage) return;
 
@@ -355,7 +438,7 @@ function App() {
     }
   };
 
-  // Handle modal close - set the last viewed image for highlighting
+  // Close modal and track last viewed image
   const handleModalClose = () => {
     if (selectedImage) {
       setLastViewedImage(selectedImage);
@@ -363,6 +446,7 @@ function App() {
     setSelectedImage(null);
   };
 
+  // Keyboard navigation for modal and random image selection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -388,18 +472,41 @@ function App() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [selectedImage]);
 
+  // Hero section keyboard navigation to gallery or modal
+  useEffect(() => {
+    const handleHeroKeyDown = (e: KeyboardEvent) => {
+      if (document.activeElement === heroRef.current) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          document.getElementById("gallery-grid")?.focus();
+        } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+          e.preventDefault();
+          if (heroImage) {
+            setSelectedImage(heroImage);
+            setCurrentImage(heroImage);
+          }
+        }
+      }
+    };
+
+    const heroElement = heroRef.current;
+    heroElement?.addEventListener("keydown", handleHeroKeyDown);
+    return () => heroElement?.removeEventListener("keydown", handleHeroKeyDown);
+  }, [heroImage]);
+
+  // Scroll to gallery grid
   const scrollToGrid = () => {
     document.getElementById("gallery-grid")?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Handle image click to open modal
   const handleImageClick = (image: Image) => {
     setSelectedImage(image);
     setCurrentImage(image);
-    // Clear the last viewed image when opening a new one
     setLastViewedImage(null);
   };
 
-  // Enhanced zoom cycling with smooth transitions
+  // Cycle through zoom levels
   const handleZoomCycle = () => {
     setImageZoom((prev) => {
       const nextZoom = prev === 1 ? 2 : prev === 2 ? 3 : 1;
@@ -407,6 +514,7 @@ function App() {
     });
   };
 
+  // Get zoom level label
   const getZoomLabel = (zoom: number) => {
     switch (zoom) {
       case 1:
@@ -420,7 +528,7 @@ function App() {
     }
   };
 
-  // Zoom Controls Component
+  // Zoom controls component
   const ZoomControls = () => (
     <motion.div
       className="absolute bottom-4 right-4 z-20 flex gap-2"
@@ -461,8 +569,8 @@ function App() {
     </motion.div>
   );
 
-  // Loading state
-  if (isLoading) {
+  // Loading state for initial page
+  if (isLoading && currentPage === 1) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -496,7 +604,7 @@ function App() {
   }
 
   // Empty state
-  if (!images.length) {
+  if (!paginatedImages.length) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -510,8 +618,11 @@ function App() {
   return (
     <div className="min-h-screen font-sans">
       {/* Hero Section */}
-      <header className="h-screen w-full relative flex flex-col items-center justify-center text-white overflow-hidden">
-        {/* Background Images */}
+      <header
+        ref={heroRef}
+        tabIndex={0}
+        className="h-screen w-full relative flex flex-col items-center justify-center text-white overflow-hidden"
+      >
         {heroImage && (
           <>
             <img
@@ -524,6 +635,7 @@ function App() {
                 opacity: isHeroLoaded ? 0 : 1,
                 transition: "opacity 0.5s ease",
               }}
+              loading="lazy"
             />
             {heroSrc && (
               <img
@@ -534,12 +646,11 @@ function App() {
                   opacity: isHeroLoaded ? 1 : 0,
                   transition: "opacity ease 1.5s",
                 }}
+                loading="lazy"
               />
             )}
           </>
         )}
-
-        {/* Hero Content */}
         <div
           className="relative z-20 text-center p-4"
           style={{
@@ -555,10 +666,7 @@ function App() {
             A curated collection of {totalImages} textures and patterns.
           </p>
         </div>
-
         <LoadingProgress isLoaded={isHeroLoaded} />
-
-        {/* Scroll Button */}
         <button
           onClick={scrollToGrid}
           className="absolute bottom-10 z-20 text-white/80 hover:text-white transition-colors"
@@ -573,9 +681,8 @@ function App() {
 
       {/* Gallery Grid */}
       {isHeroLoaded && galleryImages.length > 0 && (
-        <main id="gallery-grid" className="w-full px-2 py-2">
+        <main id="gallery-grid" tabIndex={-1} className="w-full px-2 py-2 min-h-screen">
           <div className="w-full h-px bg-gradient-to-r from-transparent via-gray-600 to-transparent mb-2" />
-
           <SimpleMasonry>
             {galleryImages.map((image, index) => (
               <GalleryImage
@@ -584,7 +691,7 @@ function App() {
                 index={index}
                 onClick={handleImageClick}
                 isSelected={
-                  (!selectedImage && // Only highlight when modal is closed
+                  (!selectedImage &&
                     lastViewedImage &&
                     lastViewedImage.thumbnail === image.thumbnail) ||
                   false
@@ -592,12 +699,38 @@ function App() {
               />
             ))}
           </SimpleMasonry>
-
-          <div className="text-center mt-16 text-white/60">
+          {/* Loading indicator for additional pages */}
+          {isLoading && currentPage > 1 && (
+            <div className="text-center my-8">
+              <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-sm text-white/60">Loading more images...</p>
+            </div>
+          )}
+          {/* Pagination controls */}
+          <div className="text-center mt-8 mb-16 text-white/60">
             <p>
-              Showing {galleryImages.length} of {totalImages} images
+              Showing {(currentPage - 1) * 50 + galleryImages.length} of {totalImages} images
             </p>
-            <p className="text-sm mt-2">
+            <div className="mt-4 flex justify-center gap-4">
+              <button
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1 || isLoading || isPaging}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span className="self-center">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage >= totalPages || isLoading || isPaging}
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+            <p className="text-sm mt-4">
               Press ESC to close • Arrow keys to navigate • Space for zoom/random • Drag to pan
             </p>
           </div>
@@ -622,19 +755,13 @@ function App() {
               showPanHint={showPanHint}
               onDismissPanHint={() => setShowPanHint(false)}
             />
-
-            {/* Close button */}
             <button
               onClick={handleModalClose}
               className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/50 text-white hover:bg-black/70 transition-colors"
             >
               <X size={24} />
             </button>
-
-            {/* Zoom controls */}
             <ZoomControls />
-
-            {/* Zoom indicator */}
             <motion.div
               className="absolute top-4 left-4 z-20 px-3 py-2 rounded-lg bg-black/50 text-white text-sm"
               initial={{ opacity: 0 }}

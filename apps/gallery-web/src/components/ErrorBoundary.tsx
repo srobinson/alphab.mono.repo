@@ -1,8 +1,8 @@
-import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { Button } from './ui/button';
-import { createLogger } from '@alphab/logging-ui';
+import { Component, type ErrorInfo, type ReactNode } from "react";
+import { Button } from "./ui/button";
+import { createLogger } from "@alphab/logging-ui";
 
-const logger = createLogger('ErrorBoundary');
+const logger = createLogger("ErrorBoundary");
 
 interface Props {
   children: ReactNode;
@@ -36,7 +36,7 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log the error with structured logging and any error reporting service
-    logger.error('Error caught by boundary', error, {
+    logger.error("Error caught by boundary", error, {
       componentStack: errorInfo.componentStack,
     });
 
@@ -132,9 +132,9 @@ export class ErrorBoundary extends Component<Props, State> {
 export const useErrorHandler = () => {
   return (error: Error, errorInfo?: ErrorInfo) => {
     logger.error(
-      'Error handled by hook',
+      "Error handled by hook",
       error,
-      errorInfo ? { componentStack: errorInfo.componentStack } : undefined
+      errorInfo ? { componentStack: errorInfo.componentStack } : undefined,
     );
     // Could integrate with error reporting service here
   };

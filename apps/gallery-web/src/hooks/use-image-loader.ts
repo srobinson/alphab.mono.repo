@@ -1,3 +1,4 @@
+// apps/gallery-web/src/hooks/use-image-loader.ts
 // Enhanced useImageLoader hook with minimum transition duration
 import { useState, useEffect, useRef } from "react";
 

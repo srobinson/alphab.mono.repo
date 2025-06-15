@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "description": "Image gallery web application",
   "type": "module",
+  "meta": {
+    "type": "react"
+  },
   "scripts": {
     "clean": "alphab-clean",
     "bootstrap": "alphab-bootstrap",

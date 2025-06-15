@@ -4,6 +4,9 @@
   "version": "0.1.0",
   "description": "Particle0 Web - React frontend application",
   "type": "module",
+  "meta": {
+    "type": "react"
+  },
   "scripts": {
     "clean": "alphab-clean",
     "bootstrap": "alphab-bootstrap",

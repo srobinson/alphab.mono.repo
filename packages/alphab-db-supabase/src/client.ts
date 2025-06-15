@@ -1,8 +1,8 @@
+// packages/alphab-db-supabase/src/client.ts
 /**
  * DatabaseClient - Simple, familiar database client
  * Follows patterns similar to Prisma, Drizzle, and other modern ORMs
  */
-
 import { createClient as createSupabaseClient, type SupabaseClient } from "@supabase/supabase-js";
 import type {
   Database,

@@ -8,13 +8,10 @@
   "exports": {
     ".": {
       "import": "./dist/index.js",
-      "require": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "require": "./dist/index.js"
     },
     "./setup": {
-      "import": "./dist/setup.js",
-      "require": "./dist/setup.js",
-      "types": "./dist/setup.d.ts"
+      "import": "./dist/setup.js"
     }
   },
   "scripts": {
@@ -50,5 +47,8 @@
     "monorepo"
   ],
   "author": "Alphab <info@alphab.dev>",
-  "license": "MIT"
+  "license": "MIT",
+  "meta": {
+    "type": "node-lib"
+  }
 }

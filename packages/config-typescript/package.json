@@ -6,11 +6,8 @@
   "exports": {
     "./base": "./base.json",
     "./node": "./node.json",
-    "./vite": "./vite.json",
     "./vite-app": "./vite-app.json",
-    "./vite-library": "./vite-library.json",
-    "./nextjs": "./nextjs.json",
-    "./remix": "./remix.json"
+    "./vite-library": "./vite-library.json"
   },
   "publishConfig": {
     "access": "public"
@@ -29,5 +26,8 @@
   ],
   "peerDependencies": {
     "typescript": "5.8.3"
+  },
+  "meta": {
+    "type": "config"
   }
 }

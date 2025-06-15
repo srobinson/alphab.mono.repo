@@ -34,94 +34,100 @@ interface Image {
 
 interface UseImageGalleryReturn {
   images: Image[];
+  paginatedImages: Image[];
   currentImage: Image | null;
   currentIndex: number;
+  currentPage: number;
+  totalPages: number;
   totalImages: number;
   isLoading: boolean;
   error: string | null;
-  galleryData: GalleryData | null; // Expose galleryData for dimensions
-
-  // Navigation methods
+  galleryData: GalleryData | null;
   nextImage: () => Image | null;
   previousImage: () => Image | null;
   goToImage: (index: number) => Image | null;
   getRandomImage: () => Image | null;
   reshuffleGallery: () => void;
-
-  // Utility methods
   getCurrentImage: () => Image | null;
   setCurrentImage: (image: Image) => void;
   findImageIndex: (image: Image) => number;
   getImageDimensions: (image: Image) => { width: number; height: number } | null;
-
-  // Additional utility methods
   resetToFirst: () => Image | null;
   canGoNext: boolean;
   canGoPrevious: boolean;
+  nextPage: () => void;
+  previousPage: () => void;
 }
 
-// Fisher-Yates shuffle algorithm for true randomization
 const shuffleArray = (array: any[]) => {
-  const shuffled = [...array]; // Create a copy to avoid mutating original
-
+  const shuffled = [...array];
   for (let i = shuffled.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
   }
-
   return shuffled;
 };
 
 export function useImageGallery(): UseImageGalleryReturn {
   const [galleryData, setGalleryData] = useState<GalleryData | null>(null);
   const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const pageSize = 50;
 
-  // Fixed images mapping
   const images = useMemo<Image[]>(() => {
     if (!galleryData?.images?.length) return [];
-
     return galleryData.images.map((imageData: GalleryImage) => ({
       full: `${FULL_IMAGE_BASE}/${imageData.variants.original.filename}`,
       thumbnail: `${THUMBNAIL_BASE}/${imageData.variants["320"].filename}`,
     }));
   }, [galleryData]);
 
+  const paginatedImages = useMemo<Image[]>(() => {
+    if (!galleryData?.images?.length) return [];
+    const start = (currentPage - 1) * pageSize;
+    const end = start + pageSize;
+    return galleryData.images.slice(start, end).map((imageData: GalleryImage) => ({
+      full: `${FULL_IMAGE_BASE}/${imageData.variants.original.filename}`,
+      thumbnail: `${THUMBNAIL_BASE}/${imageData.variants["320"].filename}`,
+    }));
+  }, [galleryData, currentPage]);
+
+  const totalPages = useMemo(
+    () => (galleryData ? Math.ceil(galleryData.images.length / pageSize) : 0),
+    [galleryData],
+  );
+
   const currentImage = useMemo<Image | null>(() => {
-    return images.length > 0 && currentIndex >= 0 && currentIndex < images.length
-      ? images[currentIndex]
+    return paginatedImages.length > 0 && currentIndex >= 0 && currentIndex < paginatedImages.length
+      ? paginatedImages[currentIndex]
       : null;
-  }, [images, currentIndex]);
+  }, [paginatedImages, currentIndex]);
 
-  const canGoNext = useMemo(() => images.length > 1, [images.length]);
-  const canGoPrevious = useMemo(() => images.length > 1, [images.length]);
+  const canGoNext = useMemo(
+    () => currentIndex < paginatedImages.length - 1 || currentPage < totalPages,
+    [paginatedImages.length, currentIndex, currentPage, totalPages],
+  );
+  const canGoPrevious = useMemo(
+    () => currentIndex > 0 || currentPage > 1,
+    [currentIndex, currentPage],
+  );
 
-  // Fixed fetch
   useEffect(() => {
     const fetchGalleryData = async () => {
       try {
         setIsLoading(true);
         setError(null);
-
         const response = await fetch(GALLERY_JSON_URL);
-
         if (!response.ok) {
           throw new Error(`Failed to fetch: ${response.status}`);
         }
-
         const data = await response.json();
-
         if (!data.images || !Array.isArray(data.images)) {
           throw new Error("Invalid gallery data format");
         }
-
-        // Use the improved shuffle instead of biased sort
         const randomizedImages = shuffleArray(data.images);
-
-        // Or use crypto-based shuffle for even better randomness:
-        // const randomizedImages = cryptoShuffleArray(data.images);
-
         setGalleryData({
           ...data,
           images: randomizedImages,
@@ -135,42 +141,58 @@ export function useImageGallery(): UseImageGalleryReturn {
         setIsLoading(false);
       }
     };
-
     fetchGalleryData();
   }, []);
 
   const nextImage = useCallback((): Image | null => {
-    if (images.length === 0) return null;
-    const nextIndex = (currentIndex + 1) % images.length;
+    if (paginatedImages.length === 0) return null;
+    if (currentIndex + 1 >= paginatedImages.length && currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      setCurrentIndex(0);
+      return paginatedImages[0];
+    }
+    const nextIndex = (currentIndex + 1) % paginatedImages.length;
     setCurrentIndex(nextIndex);
-    return images[nextIndex];
-  }, [images, currentIndex]);
+    return paginatedImages[nextIndex];
+  }, [paginatedImages, currentIndex, currentPage, totalPages]);
 
   const previousImage = useCallback((): Image | null => {
-    if (images.length === 0) return null;
-    const prevIndex = currentIndex === 0 ? images.length - 1 : currentIndex - 1;
+    if (paginatedImages.length === 0) return null;
+    if (currentIndex === 0 && currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      setCurrentIndex(pageSize - 1);
+      return paginatedImages[pageSize - 1];
+    }
+    const prevIndex = currentIndex === 0 ? paginatedImages.length - 1 : currentIndex - 1;
     setCurrentIndex(prevIndex);
-    return images[prevIndex];
-  }, [images, currentIndex]);
+    return paginatedImages[prevIndex];
+  }, [paginatedImages, currentIndex, currentPage]);
 
   const goToImage = useCallback(
     (index: number): Image | null => {
       if (images.length === 0 || index < 0 || index >= images.length) return null;
-      setCurrentIndex(index);
+      const targetPage = Math.floor(index / pageSize) + 1;
+      const pageIndex = index % pageSize;
+      setCurrentPage(targetPage);
+      setCurrentIndex(pageIndex);
       return images[index];
     },
-    [images],
+    [images, pageSize],
   );
 
   const getRandomImage = useCallback((): Image | null => {
     if (images.length === 0) return null;
     const randomIndex = Math.floor(Math.random() * images.length);
-    setCurrentIndex(randomIndex);
+    const targetPage = Math.floor(randomIndex / pageSize) + 1;
+    const pageIndex = randomIndex % pageSize;
+    setCurrentPage(targetPage);
+    setCurrentIndex(pageIndex);
     return images[randomIndex];
-  }, [images]);
+  }, [images, pageSize]);
 
   const resetToFirst = useCallback((): Image | null => {
     if (images.length === 0) return null;
+    setCurrentPage(1);
     setCurrentIndex(0);
     return images[0];
   }, [images]);
@@ -185,10 +207,13 @@ export function useImageGallery(): UseImageGalleryReturn {
         (img) => img.full === image.full && img.thumbnail === image.thumbnail,
       );
       if (index !== -1) {
-        setCurrentIndex(index);
+        const targetPage = Math.floor(index / pageSize) + 1;
+        const pageIndex = index % pageSize;
+        setCurrentPage(targetPage);
+        setCurrentIndex(pageIndex);
       }
     },
-    [images],
+    [images, pageSize],
   );
 
   const findImageIndex = useCallback(
@@ -203,11 +228,9 @@ export function useImageGallery(): UseImageGalleryReturn {
   const getImageDimensions = useCallback(
     (image: Image): { width: number; height: number } | null => {
       if (!galleryData?.images) return null;
-
       const imageData = galleryData.images.find((img) =>
         image.full.includes(img.variants.original.filename),
       );
-
       return imageData ? imageData.variants.original : null;
     },
     [galleryData],
@@ -220,18 +243,36 @@ export function useImageGallery(): UseImageGalleryReturn {
         ...galleryData,
         images: reshuffled,
       });
+      setCurrentPage(1);
       setCurrentIndex(0);
     }
   };
 
+  const nextPage = useCallback(() => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+      setCurrentIndex(0);
+    }
+  }, [currentPage, totalPages]);
+
+  const previousPage = useCallback(() => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+      setCurrentIndex(0);
+    }
+  }, [currentPage]);
+
   return {
     images,
+    paginatedImages,
     currentImage,
     currentIndex,
+    currentPage,
+    totalPages,
     totalImages: images.length,
     isLoading,
     error,
-    galleryData, // Expose galleryData
+    galleryData,
     nextImage,
     previousImage,
     goToImage,
@@ -239,10 +280,12 @@ export function useImageGallery(): UseImageGalleryReturn {
     getCurrentImage,
     setCurrentImage,
     findImageIndex,
-    getImageDimensions, // New utility method
+    getImageDimensions,
     resetToFirst,
     canGoNext,
     canGoPrevious,
     reshuffleGallery,
+    nextPage,
+    previousPage,
   };
 }
