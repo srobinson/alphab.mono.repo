@@ -36,14 +36,20 @@ export const Hero = ({
   const handleHeroKeyDown = (e: KeyboardEvent) => {
     if (isModalOpen) return;
     if (e.key === "ArrowDown") {
-      e.preventDefault();
-      if (onScrollToGrid) onScrollToGrid();
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-      e.preventDefault();
-      if (heroImage) {
-        if (onImageClick) onImageClick(heroImage);
-        setCurrentImage(heroImage);
+      if (window.scrollY === 0) {
+        e.preventDefault();
+        if (onScrollToGrid) onScrollToGrid();
       }
+      // else: let browser handle ArrowDown
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
+      if (window.scrollY === 0) {
+        e.preventDefault();
+        if (heroImage) {
+          if (onImageClick) onImageClick(heroImage);
+          setCurrentImage(heroImage);
+        }
+      }
+      // else: let browser handle ArrowLeft/ArrowRight
     } else if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
       if (onImageClick && heroImage) onImageClick(heroImage);

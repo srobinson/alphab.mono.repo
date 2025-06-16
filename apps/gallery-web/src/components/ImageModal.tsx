@@ -51,6 +51,9 @@ export function ImageModal({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         onClose();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        onClose();
       } else if (e.key === "ArrowRight" && onNextImage) {
         e.preventDefault();
         onNextImage();
