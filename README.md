@@ -1,10 +1,20 @@
-# particle0
+# Alphab Hub
 
 ```
 make beautiful things
 ```
 
-A next-generation AI-powered platform with a microservices architecture, featuring a Python FastAPI backend and a React + TypeScript frontend. This monorepo contains the Alphab Molecule/Vault POC implementation.
+This monorepo contains all major apps and services for the Alphab platform.
+
+## Main Apps
+
+This is a general outline and may not always be up to date.
+
+- gallery-web: Image gallery frontend
+- particle0-web: Platform frontend
+- particle0-api: Backend API
+
+<!-- Add deployment links here -->
 
 ## Features
 
@@ -12,20 +22,6 @@ A next-generation AI-powered platform with a microservices architecture, featuri
 - **React Frontend** - TypeScript-based React application with a modern component library
 - **FastAPI Backend** - High-performance Python API with automatic documentation
 - **Responsive Design** - Mobile-first design approach with Tailwind CSS
-
-## Project Structure
-
-```
-particle0/
-├── packages/                  # Reusable packages
-│   ├── auth-backend/          # Reusable authentication backend package
-│   ├── auth-frontend/         # Reusable authentication frontend package
-│   ├── particle0-api/     # Migrated backend using auth-backend
-│   └── particle0-frontend/    # Migrated frontend using auth-frontend
-├── .vscode/                   # VSCode workspace settings
-├── .github/                   # GitHub Actions workflows
-└── DOCS/                      # Project documentation
-```
 
 ## Getting Started
 

@@ -38,6 +38,7 @@
     "precommit",
     "pydantic",
     "pyenv",
+    "Pylance",
     "pylint",
     "pytest",
     "PYTHONPATH",
