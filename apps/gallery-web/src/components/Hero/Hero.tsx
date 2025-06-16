@@ -1,95 +1,32 @@
-import { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
-import { useImageLoader } from "../hooks/use-image-loader";
-import { LoadingProgress } from "./LoadingProgress";
+import { LoadingProgress } from "../LoadingProgress";
+import type { Image } from "./useHero";
 
-interface Image {
-  full: string;
-  thumbnail: string;
-}
-
-interface HeroProps {
+export interface HeroViewProps {
+  heroRef: React.RefObject<HTMLDivElement | null>;
+  loadedSrc: string;
+  isLoaded: boolean;
+  handleTouchStart: (e: React.TouchEvent) => void;
+  handleTouchMove: (e: React.TouchEvent) => void;
+  handleTouchEnd: () => void;
   heroImage: Image | null;
   totalImages: number;
   onImageClick?: (image: Image) => void;
-  onImageChange?: (direction: "prev" | "next") => void;
   onScrollToGrid?: () => void;
-  setCurrentImage: (image: Image) => void;
-  isModalOpen?: boolean;
 }
 
-export const Hero = ({
+export function Hero({
+  heroRef,
+  loadedSrc,
+  isLoaded,
+  handleTouchStart,
+  handleTouchMove,
+  handleTouchEnd,
   heroImage,
   totalImages,
   onImageClick,
-  onImageChange,
   onScrollToGrid,
-  setCurrentImage,
-  isModalOpen = false,
-}: HeroProps) => {
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const heroRef = useRef<HTMLDivElement>(null);
-  const { src: loadedSrc, isLoaded } = useImageLoader(heroImage?.thumbnail, heroImage?.full);
-
-  // Handle keyboard navigation
-  const handleHeroKeyDown = (e: KeyboardEvent) => {
-    if (isModalOpen) return;
-    if (e.key === "ArrowDown") {
-      if (window.scrollY === 0) {
-        e.preventDefault();
-        if (onScrollToGrid) onScrollToGrid();
-      }
-      // else: let browser handle ArrowDown
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-      if (window.scrollY === 0) {
-        e.preventDefault();
-        if (heroImage) {
-          if (onImageClick) onImageClick(heroImage);
-          setCurrentImage(heroImage);
-        }
-      }
-      // else: let browser handle ArrowLeft/ArrowRight
-    } else if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      if (onImageClick && heroImage) onImageClick(heroImage);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("keydown", handleHeroKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleHeroKeyDown);
-    };
-  }, [heroImage, onImageChange, onScrollToGrid, onImageClick]);
-
-  // Handle touch events for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    setTouchStart(touch.clientX);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!touchStart) return;
-
-    const touch = e.touches[0];
-    const diff = touchStart - touch.clientX;
-
-    // Only handle horizontal swipes
-    if (Math.abs(diff) > 50) {
-      if (diff > 0 && onImageChange) {
-        onImageChange("next");
-      } else if (diff < 0 && onImageChange) {
-        onImageChange("prev");
-      }
-      setTouchStart(null);
-    }
-  };
-
-  const handleTouchEnd = () => {
-    setTouchStart(null);
-  };
-
+}: HeroViewProps) {
   return (
     <div
       ref={heroRef}
@@ -118,10 +55,12 @@ export const Hero = ({
             alt="Main content"
             className="absolute inset-0 w-full h-full object-cover"
             style={{
+              cursor: onImageClick ? "pointer" : undefined,
               opacity: isLoaded ? 1 : 0,
               transition: "opacity ease 1.5s",
             }}
             loading="lazy"
+            onClick={onImageClick ? () => onImageClick(heroImage) : undefined}
           />
         </>
       )}
@@ -155,4 +94,4 @@ export const Hero = ({
       </button>
     </div>
   );
-};
+}

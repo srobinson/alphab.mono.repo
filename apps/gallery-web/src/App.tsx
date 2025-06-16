@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 import { useImageGallery } from "./hooks/use-image-gallery";
-import { Hero } from "./components/Hero";
+import Hero from "./components/Hero";
 import { GalleryGrid } from "./components/GalleryGrid";
 import ImageModal from "./components/ImageModal/index";
 import { ImageCounter } from "./components/ImageCounter";
