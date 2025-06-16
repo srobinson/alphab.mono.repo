@@ -1,11 +1,7 @@
 import { useRef } from "react";
 import { SimpleMasonry } from "../hooks/use-masonary-hook";
 import { GalleryImage } from "./GalleryImage";
-
-interface Image {
-  full: string;
-  thumbnail: string;
-}
+import type { Image } from "../hooks/use-image-gallery";
 
 interface GalleryGridProps {
   images: Image[];

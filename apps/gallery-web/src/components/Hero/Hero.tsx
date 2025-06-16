@@ -1,6 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { LoadingProgress } from "../LoadingProgress";
-import type { Image } from "./useHero";
+import type { Image } from "../../hooks/use-image-gallery";
 
 export interface HeroViewProps {
   heroRef: React.RefObject<HTMLDivElement | null>;

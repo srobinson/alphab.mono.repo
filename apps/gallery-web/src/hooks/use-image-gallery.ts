@@ -27,10 +27,10 @@ interface GalleryData {
   images: GalleryImage[];
 }
 
-interface Image {
+export type Image = {
   full: string;
   thumbnail: string;
-}
+};
 
 interface UseImageGalleryReturn {
   images: Image[];
@@ -361,3 +361,5 @@ export function useImageGallery(): UseImageGalleryReturn {
     previousPage,
   };
 }
+
+export type { Image };

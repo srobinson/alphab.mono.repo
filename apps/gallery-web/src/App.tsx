@@ -1,17 +1,13 @@
 import { useState, useEffect, useMemo, useRef, memo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { useImageGallery } from "./hooks/use-image-gallery";
+import { useImageGallery, type Image } from "./hooks/use-image-gallery";
 import Hero from "./components/Hero";
 import { GalleryGrid } from "./components/GalleryGrid";
 import ImageModal from "./components/ImageModal/index";
 import { ImageCounter } from "./components/ImageCounter";
 import "./gallery.css";
-
-interface Image {
-  full: string;
-  thumbnail: string;
-}
+import debounce from "./utils/debounce";
 
 function App() {
   const {
@@ -354,17 +350,5 @@ function App() {
     </div>
   );
 }
-
-// Debounce function to limit rapid calls
-const debounce = (func: () => void, delay: number) => {
-  let timeoutId: NodeJS.Timeout | null = null;
-  return () => {
-    if (timeoutId) clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => {
-      func();
-      timeoutId = null;
-    }, delay);
-  };
-};
 
 export default App;

@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { useImageLoader } from "../../hooks/use-image-loader";
-
-export interface Image {
-  full: string;
-  thumbnail: string;
-}
+import type { Image } from "../../hooks/use-image-gallery";
 
 export interface HeroProps {
   heroImage: Image | null;
