@@ -361,5 +361,3 @@ export function useImageGallery(): UseImageGalleryReturn {
     previousPage,
   };
 }
-
-export type { Image };
