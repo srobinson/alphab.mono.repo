@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { getResponsiveColumns } from "../utils/device";
 
 // Simple masonry layout component that distributes children into columns
 interface SimpleMasonryProps {
@@ -7,23 +8,14 @@ interface SimpleMasonryProps {
 }
 
 export function SimpleMasonry({ children, columns = 4 }: SimpleMasonryProps) {
-  // Determine number of columns based on window width
-  const getColumns = () => {
-    const width = window.innerWidth;
-    if (width < 500) return 1;
-    if (width < 700) return 2;
-    if (width < 1100) return 3;
-    return columns;
-  };
-
-  const [cols, setCols] = useState(getColumns());
+  const [cols, setCols] = useState(() => getResponsiveColumns(columns));
 
   // Update columns on window resize
   useEffect(() => {
-    const handleResize = () => setCols(getColumns());
+    const handleResize = () => setCols(getResponsiveColumns(columns));
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  }, [columns]);
 
   // Distribute children into columns
   const columnArrays = Array.from({ length: cols }, () => [] as React.ReactNode[]);

@@ -1,189 +1,160 @@
 import { motion, AnimatePresence } from "framer-motion";
 import React from "react";
+import { ChevronLeft, ChevronRight, ChevronUp, ChevronDown, X } from "lucide-react";
 import { LoadingProgress } from "../LoadingProgress";
 import { ZoomControls } from "../ZoomControls";
-import { TransitionSelector } from "./TransitionSelector";
 import { PanHint } from "./PanHint";
 import { LoadingOverlay } from "./LoadingOverlay";
 import { ZoomLabel } from "./ZoomLabel";
-import { NavigationButtons } from "./NavigationButtons";
-import { ModalTransitionOverlay } from "./ModalTransitionOverlay";
+import type { ImageModalProps } from "./types";
 
-export type ImageModalPresentationProps = {
-  image: { full: string; thumbnail: string };
-  imageDimensions?: { width: number; height: number } | null;
-  isPaging?: boolean;
-  onClose: () => void;
-  onNextImage?: () => void;
-  onPreviousImage?: () => void;
-  // Modal state/logic props
-  loadedSrc: string;
-  isLoaded: boolean;
-  hasError: boolean;
-  imageZoom: 1 | 2 | 3;
-  setImageZoom: (z: 1 | 2 | 3) => void;
-  handleZoomCycle: () => void;
-  showPanHint: boolean;
-  setShowPanHint: (v: boolean) => void;
-  isPanning: boolean;
-  setIsPanning: (v: boolean) => void;
-  isExiting: boolean;
-  setIsExiting: (v: boolean) => void;
-  transitionType: "unzip" | "fade" | "slide";
-  setTransitionType: (t: "unzip" | "fade" | "slide") => void;
-  phase: "idle" | "drawing" | "splitting";
-  setPhase: (p: "idle" | "drawing" | "splitting") => void;
-  isUnzipping: boolean;
-  setIsUnzipping: (v: boolean) => void;
-  unzipDirection: "next" | "prev" | null;
-  setUnzipDirection: (d: "next" | "prev" | null) => void;
-  prevImage: { full: string; thumbnail: string };
-  setPrevImage: (img: { full: string; thumbnail: string }) => void;
-  showUnzip: boolean;
-  setShowUnzip: (v: boolean) => void;
-  containerRef: React.RefObject<HTMLDivElement>;
-  imgControls: any;
-  imgRef: React.RefObject<any>;
-  isPanningEnabled: boolean;
-  panConstraints: { left: number; right: number; top: number; bottom: number };
-  zoomLabel: string;
-  getZoomStyles: (zoom: number) => any;
-  transitions: { key: string; label: string }[];
-  triggerTransition: (direction: "next" | "prev") => void;
-};
-
-export function ImageModal({
-  image,
-  imageDimensions,
-  isPaging = false,
-  onClose,
-  onNextImage,
-  onPreviousImage,
-  loadedSrc,
-  isLoaded,
-  hasError,
-  imageZoom,
-  setImageZoom,
-  handleZoomCycle,
-  showPanHint,
-  setShowPanHint,
-  isPanning,
-  setIsPanning,
-  isExiting,
-  setIsExiting,
-  transitionType,
-  setTransitionType,
-  phase,
-  setPhase,
-  isUnzipping,
-  setIsUnzipping,
-  unzipDirection,
-  setUnzipDirection,
-  prevImage,
-  setPrevImage,
-  showUnzip,
-  setShowUnzip,
-  containerRef,
-  imgControls,
-  imgRef,
-  isPanningEnabled,
-  panConstraints,
-  zoomLabel,
-  getZoomStyles,
-  transitions,
-  triggerTransition,
-}: ImageModalPresentationProps) {
+// Clean grouped props - much more readable and maintainable!
+export function ImageModal({ core, state, zoom, pan, mobile, refs }: ImageModalProps) {
   return (
-    <AnimatePresence>
-      <motion.div
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-        style={{ pointerEvents: isExiting || phase !== "idle" ? "none" : "auto" }}
-        initial={{ opacity: 1 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
-        onAnimationStart={(def) => {
-          if (def === "exit") setIsExiting(true);
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      onClick={(e) => e.target === e.currentTarget && core.onClose()}
+    >
+      <div
+        ref={refs.containerRef}
+        className="relative flex items-center justify-center w-full h-full overflow-hidden"
+        style={{
+          touchAction: mobile.isMobile
+            ? pan.isPanningEnabled
+              ? "none"
+              : "none" // Allow all gestures (including vertical swipe up to close)
+            : "auto",
+          WebkitUserSelect: "none",
+          userSelect: "none",
         }}
-        onAnimationComplete={(def) => {
-          if (def === "exit") setIsExiting(false);
-        }}
-        onClick={(e) => e.target === e.currentTarget && onClose()}
+        {...(mobile.mobileGestureBindings?.() || {})}
       >
-        {/* Transition selector UI */}
-        {/* <TransitionSelector
-          transitions={transitions}
-          transitionType={transitionType}
-          onSelect={(key) => setTransitionType(key as any)}
-        /> */}
-        <div
-          ref={containerRef}
-          className="relative flex items-center justify-center w-full h-full overflow-hidden"
-        >
-          {/* Blurred background using low-res image */}
-          <img
-            src={image.thumbnail}
-            alt="Loading background"
-            className="absolute inset-0 w-screen h-screen object-cover transition-opacity duration-500"
+        {/* Blurred background - provides visual context while main image loads */}
+        <img
+          src={core.image.thumbnail}
+          alt="Background"
+          className="absolute inset-0 w-screen h-screen object-cover transition-opacity duration-500"
+          style={{
+            filter: "blur(20px) saturate(.875)",
+            opacity: 1,
+          }}
+        />
+
+        {/* Main image - progressive loading: starts with thumbnail, switches to full res when loaded */}
+        {state.loadedSrc && (
+          <motion.img
+            ref={refs.imgRef}
+            src={state.loadedSrc}
+            alt="Full resolution"
+            className={`relative block object-contain select-none ${
+              pan.isPanningEnabled ? "cursor-grab" : "cursor-pointer"
+            } ${pan.isPanning ? "cursor-grabbing" : ""} ${
+              mobile.isGestureActive ? "pointer-events-none" : ""
+            }`}
             style={{
-              filter: "blur(20px) saturate(.875)",
-              opacity: 1,
+              opacity: state.isLoaded ? 1 : 0,
+              transition: "opacity 1s ease",
             }}
+            animate={refs.imgControls}
+            transition={{
+              duration: 0.5,
+              ease: [0.25, 0.1, 0.25, 1],
+              type: "tween",
+            }}
+            onDoubleClick={zoom.handleZoomCycle}
+            drag={pan.isPanningEnabled ? "x" : false} // Only allow horizontal drag when panning
+            dragConstraints={pan.panConstraints}
+            dragElastic={0.05}
+            dragMomentum={false}
+            onDragStart={() => pan.setIsPanning(true)}
+            onDragEnd={() => pan.setIsPanning(false)}
+            whileDrag={{ scale: 0.98 }}
           />
-          {/* Transition overlays */}
-          <ModalTransitionOverlay
-            transitionType={transitionType}
-            phase={phase}
-            prevImage={prevImage}
-            loadedSrc={loadedSrc}
-            imageZoom={imageZoom}
-            unzipDirection={unzipDirection}
-            getZoomStyles={getZoomStyles}
-          />
-          {/* Main image (progressive load) */}
-          {loadedSrc && (
-            <motion.img
-              ref={imgRef}
-              src={loadedSrc}
-              alt="Full resolution"
-              className={`relative block object-contain select-none ${
-                isPanningEnabled ? "cursor-grab" : "cursor-pointer"
-              } ${isPanning ? "cursor-grabbing" : ""}`}
-              style={{
-                opacity: isLoaded ? 1 : 0,
-                transition: "opacity 1s ease",
-              }}
-              animate={imgControls}
-              transition={{
-                duration: 0.5,
-                ease: [0.25, 0.1, 0.25, 1],
-                type: "tween",
-              }}
-              onDoubleClick={handleZoomCycle}
-              drag={isPanningEnabled}
-              dragConstraints={panConstraints}
-              dragElastic={0.05}
-              dragMomentum={false}
-              onDragStart={() => setIsPanning(true)}
-              onDragEnd={() => setIsPanning(false)}
-              whileDrag={{ scale: 0.98 }}
-            />
-          )}
-          <LoadingProgress isLoaded={isLoaded} />
-          <PanHint show={isPanningEnabled && showPanHint} onClose={() => setShowPanHint(false)} />
-          <LoadingOverlay show={isPaging} />
-        </div>
-        {/* <NavigationButtons
-          onClose={onClose}
-          onPrev={phase === "idle" && onPreviousImage ? () => triggerTransition("prev") : undefined}
-          onNext={phase === "idle" && onNextImage ? () => triggerTransition("next") : undefined}
-          showPrev={!!onPreviousImage}
-          showNext={!!onNextImage}
-          disabled={phase !== "idle"}
-        /> */}
-        <ZoomControls imageZoom={imageZoom} onZoomChange={setImageZoom as (zoom: number) => void} />
-        <ZoomLabel zoomLabel={zoomLabel} imageDimensions={imageDimensions} />
-      </motion.div>
-    </AnimatePresence>
+        )}
+
+        <LoadingProgress isLoaded={state.isLoaded} />
+        <PanHint
+          show={pan.isPanningEnabled && pan.showPanHint}
+          onClose={() => pan.setShowPanHint(false)}
+        />
+        <LoadingOverlay show={core.isPaging || false} />
+
+        {/* Desktop Close Button - Always visible on desktop */}
+        {!mobile.isMobile && (
+          <button
+            className="absolute top-4 right-4 z-10 p-3 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+            onClick={core.onClose}
+            aria-label="Close modal"
+          >
+            <X size={24} />
+          </button>
+        )}
+
+        {/* Desktop Navigation Arrows - Always visible on desktop */}
+        {!mobile.isMobile && core.onPreviousImage && (
+          <button
+            className="absolute left-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+            onClick={core.onPreviousImage}
+            aria-label="Previous image"
+          >
+            <ChevronLeft size={24} />
+          </button>
+        )}
+
+        {!mobile.isMobile && core.onNextImage && (
+          <button
+            className="absolute right-4 top-1/2 -translate-y-1/2 z-10 p-3 bg-black/50 hover:bg-black/70 rounded-full text-white transition-colors"
+            onClick={core.onNextImage}
+            aria-label="Next image"
+          >
+            <ChevronRight size={24} />
+          </button>
+        )}
+
+        {/* Mobile swipe indicator */}
+        {mobile.swipeIndicator && (
+          <motion.div
+            className={`absolute p-3 bg-white/20 rounded-full ${
+              mobile.swipeIndicator.direction === "left"
+                ? "left-4 top-1/2 -translate-y-1/2"
+                : mobile.swipeIndicator.direction === "right"
+                  ? "right-4 top-1/2 -translate-y-1/2"
+                  : mobile.swipeIndicator.direction === "up"
+                    ? "top-4 left-1/2 -translate-x-1/2"
+                    : "bottom-4 left-1/2 -translate-x-1/2"
+            }`}
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{
+              opacity: mobile.swipeIndicator.opacity,
+              scale: mobile.swipeIndicator.scale,
+            }}
+            exit={{ opacity: 0, scale: 0.8 }}
+          >
+            {mobile.swipeIndicator.direction === "left" ? (
+              <ChevronLeft size={24} className="text-white" />
+            ) : mobile.swipeIndicator.direction === "right" ? (
+              <ChevronRight size={24} className="text-white" />
+            ) : mobile.swipeIndicator.direction === "up" ? (
+              <ChevronUp size={24} className="text-white" />
+            ) : (
+              <ChevronDown size={24} className="text-white" />
+            )}
+          </motion.div>
+        )}
+      </div>
+
+      {/* Zoom Controls are hidden on mobile devices - only show on desktop */}
+      {!mobile.isMobile && (
+        <ZoomControls
+          imageZoom={zoom.imageZoom}
+          onZoomChange={zoom.setImageZoom as (zoom: number) => void}
+        />
+      )}
+      <ZoomLabel zoomLabel={zoom.zoomLabel} imageDimensions={core.imageDimensions} />
+    </motion.div>
   );
 }

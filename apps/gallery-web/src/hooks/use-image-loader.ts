@@ -53,7 +53,7 @@ export const useImageLoader = (lowResSrc?: string, highResSrc?: string): UseImag
       // Check if this is still the current image request
       if (imageRef.current === highResImg) {
         const loadTime = Date.now() - loadStartTimeRef.current;
-        const minTransitionTime = 333;
+        const minTransitionTime = 200;
 
         if (loadTime < minTransitionTime) {
           // If image loaded too quickly, delay the transition

@@ -11,24 +11,22 @@ interface GalleryImageProps {
   index: number;
   onClick: (image: Image) => void;
   isSelected: boolean;
-  imageRef?: React.Ref<HTMLDivElement>;
 }
 
 export const GalleryImage = memo(
-  ({ image, index, onClick, isSelected, imageRef }: GalleryImageProps) => {
-    const localRef = useRef<HTMLDivElement>(null);
-    const ref = imageRef || localRef;
+  ({ image, index, onClick, isSelected }: GalleryImageProps) => {
+    const ref = useRef<HTMLDivElement>(null);
 
     // Scroll selected image into view
     useEffect(() => {
-      if (isSelected && ref && "current" in ref && ref.current) {
+      if (isSelected && ref.current) {
         ref.current.scrollIntoView({
           behavior: "smooth",
           block: "center",
           inline: "center",
         });
       }
-    }, [isSelected, ref]);
+    }, [isSelected]);
 
     return (
       <motion.div

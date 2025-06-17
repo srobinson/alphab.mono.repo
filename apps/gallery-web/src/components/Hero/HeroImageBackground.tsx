@@ -21,8 +21,8 @@ export function HeroImageBackground({
         className="absolute inset-0 w-full h-full object-cover"
         style={{
           filter: "blur(20px) saturate(0.8)",
-          transform: "scale(1.1)",
-          opacity: isLoaded ? 0 : 1,
+          transform: "scale(1.05)",
+          opacity: isLoaded ? 0 : 0.333,
           transition: "opacity 0.5s ease",
         }}
         loading="lazy"
