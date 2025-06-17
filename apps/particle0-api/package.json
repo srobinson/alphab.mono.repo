@@ -1,0 +1,38 @@
+{
+  "name": "@alphab.project/particle0-api",
+  "version": "0.1.0",
+  "description": "Particle0 API - FastAPI backend service",
+  "private": true,
+  "meta": {
+    "type": "python"
+  },
+  "scripts": {
+    "clean": "alphab-clean",
+    "bootstrap": "alphab-bootstrap",
+    "init": "echo 'Particle0 API initialized'",
+    "dev": "alphab-dev",
+    "build": "alphab-build",
+    "lint": "alphab-lint",
+    "lint:fix": "alphab-format",
+    "format": "alphab-format",
+    "test": "alphab-test",
+    "test:coverage": "alphab-test-coverage",
+    "test:watch": "poetry run python -m pytest --watch",
+    "type-check": "alphab-type-check"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0",
+    "python": ">=3.11"
+  },
+  "packageManager": "pnpm@9.15.0",
+  "devDependencies": {
+    "@alphab/scripts": "workspace:*"
+  },
+  "keywords": [
+    "alphab",
+    "particle0",
+    "fastapi",
+    "api"
+  ]
+}

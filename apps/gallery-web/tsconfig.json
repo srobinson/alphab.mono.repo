@@ -1,0 +1,11 @@
+{
+  "extends": "@alphab/typescript-config/vite-app",
+  "compilerOptions": {
+    "rootDir": "src",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}

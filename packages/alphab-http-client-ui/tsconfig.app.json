@@ -1,0 +1,9 @@
+// {
+//   "extends": "@alphab/typescript-config/vite",
+//   "compilerOptions": {
+//     "noEmit": true
+//   },
+//   "include": [
+//     "src"
+//   ]
+// }

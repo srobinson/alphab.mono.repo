@@ -1,0 +1,63 @@
+#!/usr/bin/env node
+const fs = require("fs");
+const fsp = require("fs/promises");
+const path = require("path");
+const { glob } = require("glob");
+
+const args = process.argv.slice(2);
+const execute = args.includes("--execute");
+
+function inferTypeSync(pkgPath) {
+  const files = new Set(fs.readdirSync(pkgPath));
+
+  if (files.has("pyproject.toml")) return "python-app";
+  if (files.has("vite.config.ts") || files.has("vite.config.js")) {
+    return files.has("index.html") ? "react-app" : "node-app";
+  }
+  if (files.has("tsconfig.json") && files.has("src")) return "node-lib";
+  if (files.has("tsconfig.json") && files.has("bin")) return "node-app";
+
+  return "config";
+}
+
+async function updatePackageJson(pkgDir) {
+  const pkgPath = path.join(pkgDir, "package.json");
+
+  try {
+    const content = await fsp.readFile(pkgPath, "utf-8");
+    const data = JSON.parse(content);
+    const current = data.meta?.type;
+    const inferred = inferTypeSync(pkgDir);
+
+    if (!inferred) return;
+
+    if (current !== inferred) {
+      console.log(`📦 ${path.basename(pkgDir)}: ${current ?? "(missing)"} → ${inferred}`);
+      data.meta = { ...(data.meta || {}), type: inferred };
+
+      if (execute) {
+        await fsp.writeFile(pkgPath, JSON.stringify(data, null, 2));
+      }
+    }
+  } catch (err) {
+    console.warn(`⚠️ Skipping ${pkgPath}: ${err.message}`);
+  }
+}
+
+function main() {
+  console.log("main", process.cwd());
+
+  glob("packages/*", { nodir: false }, async (err, dirs) => {
+    if (err) throw err;
+
+    for (const dir of dirs) {
+      await updatePackageJson(dir);
+    }
+
+    if (!execute) {
+      console.log(`\n🧪 Dry-run only. Use "--execute" to apply changes.`);
+    }
+  });
+}
+
+main();

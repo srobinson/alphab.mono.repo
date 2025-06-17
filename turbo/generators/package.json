@@ -1,0 +1,14 @@
+{
+  "name": "@alphab/turbo-generators",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Turbo generators for the Alphab monorepo",
+  "type": "module",
+  "dependencies": {
+    "@turbo/gen": "^2.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
+}

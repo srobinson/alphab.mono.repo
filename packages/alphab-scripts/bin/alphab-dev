@@ -1,0 +1,8 @@
+#!/usr/bin/env node
+// packages/alphab-scripts/bin/alphab-dev
+
+const { createUniversalCommand } = require("../lib/core/universal-command");
+
+// Create and run the dev command
+const devCommand = createUniversalCommand("dev");
+devCommand();

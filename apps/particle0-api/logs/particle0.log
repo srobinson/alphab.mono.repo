@@ -1,0 +1,6 @@
+2025-06-11 21:13:30,542 - particle0.config - INFO - {"log_file": "logs/particle0.log", "format": "json", "event": "Production logging initialized", "timestamp": "2025-06-11T14:13:30.542139Z", "logger": "particle0.config", "level": "info"}
+2025-06-11 21:13:30,542 - particle0.test - INFO - {"service": "particle0", "version": "0.1.0", "event": "\ud83d\ude80 Starting application", "timestamp": "2025-06-11T14:13:30.542480Z", "logger": "particle0.test", "level": "info"}
+2025-06-11 21:13:30,542 - particle0.test - INFO - {"origins": ["localhost:3000", "vercel.app"], "event": "\ud83c\udf10 CORS configured", "timestamp": "2025-06-11T14:13:30.542553Z", "logger": "particle0.test", "level": "info"}
+2025-06-11 21:13:30,542 - particle0.test - INFO - {"provider": "logto", "status": "success", "event": "\ud83d\udd10 Authentication setup", "timestamp": "2025-06-11T14:13:30.542606Z", "logger": "particle0.test", "level": "info"}
+2025-06-11 21:13:30,542 - particle0.test - WARNING - {"current": 95, "limit": 100, "event": "\u26a0\ufe0f  Rate limit approaching", "timestamp": "2025-06-11T14:13:30.542656Z", "logger": "particle0.test", "level": "warning"}
+2025-06-11 21:13:30,542 - particle0.test - ERROR - {"error": "timeout", "retry_in": 5, "event": "\u274c Database connection failed", "timestamp": "2025-06-11T14:13:30.542703Z", "logger": "particle0.test", "level": "error"}

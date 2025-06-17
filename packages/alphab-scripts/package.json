@@ -1,0 +1,39 @@
+{
+  "name": "@alphab/scripts",
+  "version": "0.1.0",
+  "description": "Shared build scripts for Alphab monorepo",
+  "private": true,
+  "type": "commonjs",
+  "bin": {
+    "alphab-clean": "./bin/alphab-clean",
+    "alphab-bootstrap": "./bin/alphab-bootstrap",
+    "alphab-dev": "./bin/alphab-dev",
+    "alphab-build": "./bin/alphab-build",
+    "alphab-lint": "./bin/alphab-lint",
+    "alphab-format": "./bin/alphab-format",
+    "alphab-type-check": "./bin/alphab-type-check",
+    "alphab-test": "./bin/alphab-test",
+    "alphab-test-coverage": "./bin/alphab-test-coverage"
+  },
+  "files": [
+    "bin/**",
+    "lib/**",
+    "configs/**"
+  ],
+  "dependencies": {
+    "chalk": "^4.1.2",
+    "cross-spawn": "^7.0.3",
+    "execa": "^9.6.0"
+  },
+  "keywords": [
+    "alphab",
+    "build-tools",
+    "monorepo",
+    "scripts"
+  ],
+  "author": "Alphab <info@alphab.dev>",
+  "license": "MIT",
+  "meta": {
+    "type": "config"
+  }
+}

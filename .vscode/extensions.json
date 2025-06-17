@@ -1,0 +1,17 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.black-formatter",
+    "eamodio.gitlens",
+    "streetsidesoftware.code-spell-checker",
+    "editorconfig.editorconfig",
+    "ms-azuretools.vscode-docker",
+    "mikestead.dotenv",
+    "dsznajder.es7-react-js-snippets",
+    "bradlc.vscode-tailwindcss",
+    "ms-vsliveshare.vsliveshare"
+  ]
+}

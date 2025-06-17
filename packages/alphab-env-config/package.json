@@ -1,0 +1,54 @@
+{
+  "name": "@alphab/env-config",
+  "version": "0.1.0",
+  "description": "Centralized environment configuration for Alphab monorepo",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./setup": {
+      "import": "./dist/setup.js"
+    }
+  },
+  "scripts": {
+    "clean": "alphab-clean",
+    "bootstrap": "alphab-bootstrap",
+    "dev": "alphab-dev",
+    "build": "alphab-build",
+    "lint": "alphab-lint",
+    "lint:fix": "alphab-format",
+    "format": "alphab-format",
+    "test": "alphab-test",
+    "test:coverage": "alphab-test-coverage",
+    "type-check": "alphab-type-check",
+    "setup": "node dist/setup.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "chalk": "^4.1.2",
+    "fs-extra": "^11.2.0"
+  },
+  "devDependencies": {
+    "@alphab/scripts": "workspace:*",
+    "@alphab/typescript-config": "workspace:*",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.10.2",
+    "typescript": "5.8.3"
+  },
+  "keywords": [
+    "alphab",
+    "environment",
+    "configuration",
+    "env",
+    "monorepo"
+  ],
+  "author": "Alphab <info@alphab.dev>",
+  "license": "MIT",
+  "meta": {
+    "type": "node-lib"
+  }
+}

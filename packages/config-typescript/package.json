@@ -1,0 +1,33 @@
+{
+  "name": "@alphab/typescript-config",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "exports": {
+    "./base": "./base.json",
+    "./node": "./node.json",
+    "./vite-app": "./vite-app.json",
+    "./vite-library": "./vite-library.json"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "base.json",
+    "library.json",
+    "node.json",
+    "nextjs.json",
+    "react-library.json",
+    "react-app.json",
+    "remix.json",
+    "vite.json",
+    "vite-app.json",
+    "vite-library.json"
+  ],
+  "peerDependencies": {
+    "typescript": "5.8.3"
+  },
+  "meta": {
+    "type": "config"
+  }
+}

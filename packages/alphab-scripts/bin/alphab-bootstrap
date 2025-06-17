@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+
+const { createUniversalCommand } = require("../lib/core/universal-command");
+
+// Create and run the bootstrap command
+const bootstrapCommand = createUniversalCommand("bootstrap");
+bootstrapCommand();

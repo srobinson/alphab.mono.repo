@@ -1,0 +1,57 @@
+{
+  "name": "@alphab/db-migrations",
+  "version": "0.1.0",
+  "description": "Database-agnostic migration framework with versioning, rollback, and audit capabilities",
+  "private": true,
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "clean": "alphab-clean",
+    "bootstrap": "alphab-bootstrap",
+    "dev": "alphab-dev",
+    "build": "alphab-build",
+    "lint": "alphab-lint",
+    "lint:fix": "alphab-format",
+    "format": "alphab-format",
+    "test": "alphab-test",
+    "test:coverage": "alphab-test-coverage",
+    "type-check": "alphab-type-check"
+  },
+  "dependencies": {
+    "@alphab/db-supabase": "workspace:*",
+    "@alphab/env-config": "workspace:*",
+    "@supabase/supabase-js": "^2.45.4",
+    "chalk": "^4.1.2",
+    "fs-extra": "^11.2.0",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@alphab/scripts": "workspace:*",
+    "@alphab/typescript-config": "workspace:*",
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.10.2",
+    "@types/uuid": "^10.0.0",
+    "typescript": "5.8.3",
+    "vitest": "^3.2.3"
+  },
+  "keywords": [
+    "alphab",
+    "database",
+    "migrations",
+    "versioning",
+    "rollback",
+    "audit"
+  ],
+  "author": "Alphab <info@alphab.dev>",
+  "license": "MIT",
+  "type": "module",
+  "meta": {
+    "type": "node-lib"
+  }
+}
