@@ -58,6 +58,13 @@ export function useMobileGestures({
     (e: React.TouchEvent) => {
       if (disabled || !isMobile) return;
 
+      // Prevent pinch zoom by checking for multiple touches
+      if (e.touches.length > 1) {
+        console.log("🎯 Pinch Gesture Detected - Preventing native zoom");
+        e.preventDefault();
+        return;
+      }
+
       const touch = e.touches[0];
       const now = Date.now();
 
@@ -67,10 +74,10 @@ export function useMobileGestures({
         time: now,
       });
 
-      // Check for double tap
+      // Check for double tap (only for single finger touches)
       const timeSinceLastTap = now - gestureState.lastTap;
-      if (timeSinceLastTap < 300 && timeSinceLastTap > 0) {
-        console.log("🎯 Double Tap Detected:", { timeSinceLastTap });
+      if (timeSinceLastTap < 300 && timeSinceLastTap > 50 && e.touches.length === 1) {
+        console.log("🎯 Double Tap Detected:", { timeSinceLastTap, touches: e.touches.length });
         onDoubleTap?.();
       }
 
@@ -86,6 +93,13 @@ export function useMobileGestures({
   const handleTouchMove = useCallback(
     (e: React.TouchEvent) => {
       if (disabled || !isMobile || !touchStart) return;
+
+      // Prevent pinch zoom during move
+      if (e.touches.length > 1) {
+        console.log("🎯 Multi-touch Move - Preventing pinch zoom");
+        e.preventDefault();
+        return;
+      }
 
       const touch = e.touches[0];
       const deltaX = touch.clientX - touchStart.x;
@@ -123,6 +137,14 @@ export function useMobileGestures({
   const handleTouchEnd = useCallback(
     (e: React.TouchEvent) => {
       if (disabled || !isMobile || !touchStart) return;
+
+      // If this was a multi-touch gesture, don't process it as a swipe/tap
+      if (e.changedTouches.length > 1 || e.touches.length > 0) {
+        console.log("🎯 Multi-touch End - Ignoring gesture");
+        setTouchStart(null);
+        setIsGestureActive(false);
+        return;
+      }
 
       const touch = e.changedTouches[0];
       const deltaX = touch.clientX - touchStart.x;

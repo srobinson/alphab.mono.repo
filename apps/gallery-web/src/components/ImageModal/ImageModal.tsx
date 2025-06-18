@@ -30,6 +30,8 @@ export function ImageModal({ core, state, zoom, pan, mobile, refs }: ImageModalP
           touchAction: mobile.isMobile ? "none" : "auto", // Always prevent default touch on mobile
           WebkitUserSelect: "none",
           userSelect: "none",
+          WebkitTouchCallout: "none", // Prevent callout
+          WebkitTapHighlightColor: "transparent", // Remove tap highlight
         }}
         {...(mobile.isMobile ? mobile.mobileGestureBindings?.() || {} : {})}
         onDoubleClick={mobile.isMobile ? zoom.handleZoomCycle : undefined} // Fallback double-tap for mobile when panning
@@ -38,9 +40,9 @@ export function ImageModal({ core, state, zoom, pan, mobile, refs }: ImageModalP
         <img
           src={core.image.thumbnail}
           alt="Background"
-          className="absolute inset-0 w-screen h-screen object-cover transition-opacity duration-500"
+          className="absolute inset-0 w-screen h-screen object-cover"
           style={{
-            filter: "blur(20px) saturate(.875)",
+            filter: mobile.isMobile ? "blur(40px) saturate(.875)" : "blur(20px) saturate(.875)",
             opacity: 1,
           }}
         />
@@ -59,14 +61,11 @@ export function ImageModal({ core, state, zoom, pan, mobile, refs }: ImageModalP
               mobile.isGestureActive ? "pointer-events-none" : ""
             }`}
             style={{
-              opacity: state.isLoaded ? 1 : 0,
+              opacity: state.isLoaded ? 1 : 0.8,
               transition: "opacity 1s ease",
               ...(mobile.isMobile && zoom.imageZoom === 1 && pan.isPanningEnabled
                 ? {
-                    // Debug styles for mobile Original size panning
-                    border: "2px solid red",
-                    boxSizing: "border-box",
-                    // Force exact dimensions - override any CSS constraints
+                    // Force exact dimensions for mobile panning
                     width: `${core.imageDimensions?.width}px !important`,
                     height: `${core.imageDimensions?.height}px !important`,
                     maxWidth: "none !important",
@@ -83,7 +82,15 @@ export function ImageModal({ core, state, zoom, pan, mobile, refs }: ImageModalP
               type: "tween",
             }}
             onDoubleClick={zoom.handleZoomCycle}
-            drag={pan.isPanningEnabled ? (mobile.isMobile ? true : "x") : false}
+            drag={
+              pan.isPanningEnabled
+                ? mobile.isMobile
+                  ? true
+                  : zoom.imageZoom === 3
+                    ? false
+                    : true
+                : false
+            }
             dragConstraints={pan.panConstraints}
             dragElastic={0.05}
             dragMomentum={false}

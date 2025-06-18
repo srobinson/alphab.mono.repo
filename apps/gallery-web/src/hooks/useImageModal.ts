@@ -214,10 +214,12 @@ export function useImageModal({
             maxHeight: imgHeight, // Force exact height
           };
         } else {
-          // Desktop: original behavior
+          // Desktop: FIXED - use full dimensions with unset constraints
           return {
             width: imgWidth,
             height: imgHeight,
+            maxWidth: "unset",
+            maxHeight: "unset",
           };
         }
       case 2:
@@ -225,6 +227,8 @@ export function useImageModal({
         return {
           width: viewportWidth,
           height: (imgHeight * viewportWidth) / imgWidth,
+          maxWidth: "unset",
+          maxHeight: "unset",
         };
       case 3:
         // Fit Height - mobile fills viewport, desktop unchanged
@@ -246,7 +250,6 @@ export function useImageModal({
           return {
             width: (imgWidth * viewportHeight) / imgHeight,
             height: viewportHeight,
-            objectFit: "cover",
           };
         }
       default:

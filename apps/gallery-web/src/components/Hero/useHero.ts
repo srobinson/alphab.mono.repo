@@ -5,9 +5,9 @@ import type { Image } from "../../hooks/useGallery";
 export interface HeroProps {
   heroImage: Image | null;
   totalImages: number;
-  onImageClick?: (image: Image) => void;
-  onImageChange?: (direction: "prev" | "next") => void;
-  onScrollToGrid?: () => void;
+  onImageClick: (image: Image) => void;
+  onImageChange: (direction: "prev" | "next") => void;
+  onScrollToGrid: () => void;
   setCurrentImage: (image: Image) => void;
   isModalOpen?: boolean;
 }
@@ -37,15 +37,14 @@ export function useHero({
       } else if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
         if (window.scrollY === 0) {
           e.preventDefault();
-          console.log("heroImage", heroImage);
           if (heroImage) {
-            if (onImageClick) onImageClick(heroImage);
+            onImageClick(heroImage);
             setCurrentImage(heroImage);
           }
         }
       } else if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
-        if (onImageClick && heroImage) onImageClick(heroImage);
+        if (heroImage) onImageClick(heroImage);
       }
     };
     document.addEventListener("keydown", handleHeroKeyDown);
@@ -66,8 +65,10 @@ export function useHero({
     const diff = touchStart - touch.clientX;
     if (Math.abs(diff) > 50) {
       // On mobile swipe left/right opens modal with hero image
-      onImageClick(heroImage);
-      setCurrentImage(heroImage);
+      if (heroImage) {
+        onImageClick(heroImage);
+        setCurrentImage(heroImage);
+      }
       setTouchStart(null);
     }
   };

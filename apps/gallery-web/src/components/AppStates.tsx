@@ -1,3 +1,4 @@
+import { LoadingProgress } from "./LoadingProgress";
 interface AppStatesProps {
   isLoading: boolean;
   error: string | null;
@@ -5,18 +6,19 @@ interface AppStatesProps {
   totalImages: number;
 }
 
-export function LoadingState({ totalImages }: { totalImages: number }) {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="w-16 h-16 border-4 border-white/20 border-t-white rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-lg">Loading gallery...</p>
-        <p className="text-sm text-white/60 mt-2">
-          {totalImages > 0 ? `Fetching ${totalImages} images...` : "Fetching images..."}
-        </p>
-      </div>
-    </div>
-  );
+export function AppStates({ isLoading, error, isEmpty, totalImages }: AppStatesProps) {
+  if (isLoading) return <LoadingState />;
+  if (error) return <ErrorState error={error} />;
+  if (isEmpty) return <EmptyState />;
+  return null;
+}
+
+export function EmptyState() {
+  return <LoadingProgress isLoaded={false} />;
+}
+
+export function LoadingState() {
+  return <LoadingProgress isLoaded={false} />;
 }
 
 export function ErrorState({ error }: { error: string }) {
@@ -35,22 +37,4 @@ export function ErrorState({ error }: { error: string }) {
       </div>
     </div>
   );
-}
-
-export function EmptyState() {
-  return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="text-4xl mb-4">🖼️</div>
-        <p className="text-lg">No images found in gallery</p>
-      </div>
-    </div>
-  );
-}
-
-export function AppStates({ isLoading, error, isEmpty, totalImages }: AppStatesProps) {
-  if (isLoading) return <LoadingState totalImages={totalImages} />;
-  if (error) return <ErrorState error={error} />;
-  if (isEmpty) return <EmptyState />;
-  return null;
 }

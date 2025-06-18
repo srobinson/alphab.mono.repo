@@ -48,6 +48,7 @@ export const useImageLoader = (lowResSrc?: string, highResSrc?: string): UseImag
     loadStartTimeRef.current = Date.now();
     const highResImg = new Image();
     imageRef.current = highResImg;
+    setSrc(lowResSrc);
 
     highResImg.onload = () => {
       // Check if this is still the current image request

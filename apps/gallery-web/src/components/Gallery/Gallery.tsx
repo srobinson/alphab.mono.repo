@@ -14,13 +14,14 @@ export function Gallery({
 }: GalleryProps) {
   return (
     <GalleryProvider
-      totalImages={provider.totalImages}
       currentIndex={provider.currentIndex}
       onIndexChange={() => {}}
+      totalImages={provider.totalImages}
     >
       <Hero
         heroImage={hero.heroImage}
         isModalOpen={hero.isModalOpen}
+        onImageChange={() => {}}
         onImageClick={hero.onHeroImageClick}
         onScrollToGrid={hero.onScrollToGrid}
         setCurrentImage={() => {}} // ❌ COULD REMOVE - Not needed, using empty function
@@ -31,11 +32,11 @@ export function Gallery({
         images={{ images: grid.galleryImages }}
         pagination={{
           currentPage: grid.currentPage,
-          totalPages: grid.totalPages,
-          totalImages: grid.totalImages,
           isLoading: grid.isLoading,
           onNextPage: grid.onNextPage,
           onPreviousPage: grid.onPreviousPage,
+          totalImages: grid.totalImages,
+          totalPages: grid.totalPages,
         }}
         selection={{
           lastViewedImage: grid.lastViewedImage,
