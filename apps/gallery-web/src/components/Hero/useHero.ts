@@ -66,10 +66,8 @@ export function useHero({
     const diff = touchStart - touch.clientX;
     if (Math.abs(diff) > 50) {
       // On mobile swipe left/right opens modal with hero image
-      if (heroImage && onImageClick) {
-        onImageClick(heroImage);
-        setCurrentImage(heroImage);
-      }
+      onImageClick(heroImage);
+      setCurrentImage(heroImage);
       setTouchStart(null);
     }
   };

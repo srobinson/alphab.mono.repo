@@ -114,27 +114,6 @@ export function useImageModal({
     }
   };
 
-  // Mobile gesture support (with proper callbacks)
-  const mobileGestures = useMobileGestures({
-    onSwipeLeft: () => {
-      if (onNextImage) {
-        onNextImage();
-      }
-    },
-    onSwipeRight: () => {
-      if (onPreviousImage) {
-        onPreviousImage();
-      }
-    },
-    onSwipeUp: () => {
-      // Swipe up closes the modal on mobile
-      onClose();
-    },
-    onDoubleTap: handleZoomCycle,
-    // Note: onPinchZoom removed since native touch events don't support pinch gestures
-    disabled: hasError, // Only disable on error, not while loading
-  });
-
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -173,18 +152,28 @@ export function useImageModal({
       switch (zoom) {
         case 1:
           return {
-            width: 800,
-            height: 600,
+            // width: 800,
+            // height: 600,
+            width: "auto",
+            height: "auto",
+            maxWidth: isMobile ? "95vw" : "90vw",
+            maxHeight: isMobile ? "80vh" : "90vh",
           };
         case 2:
           return {
-            width: viewportWidth,
-            height: 600,
+            // width: viewportWidth,
+            // height: 600,
+            width: isMobile ? "100vw" : "100vw",
+            height: "auto",
+            maxHeight: isMobile ? "80vh" : "90vh",
           };
         case 3:
           return {
-            width: 800,
-            height: viewportHeight,
+            // width: 800,
+            // height: viewportHeight,
+            width: "auto",
+            height: isMobile ? "80vh" : "100vh",
+            maxWidth: isMobile ? "95vw" : "90vw",
           };
         default:
           return {
@@ -198,11 +187,39 @@ export function useImageModal({
 
     switch (zoom) {
       case 1:
-        // Original size - same for both platforms
-        return {
-          width: imgWidth,
-          height: imgHeight,
-        };
+        // Original size - show full image but keep it manageable on mobile
+        if (isMobile) {
+          console.log("🎯 Mobile Original Size Styles:", {
+            imgWidth,
+            imgHeight,
+            viewportWidth,
+            viewportHeight,
+            "Image larger than viewport": {
+              horizontally: imgWidth > viewportWidth,
+              vertically: imgHeight > viewportHeight,
+            },
+            "Dimensions ratio": {
+              "Image aspect": (imgWidth / imgHeight).toFixed(2),
+              "Viewport aspect": (viewportWidth / viewportHeight).toFixed(2),
+            },
+          });
+
+          // For mobile: use full image dimensions and ensure no constraints
+          return {
+            width: imgWidth,
+            height: imgHeight,
+            minWidth: imgWidth, // Force minimum width
+            minHeight: imgHeight, // Force minimum height
+            maxWidth: imgWidth, // Force exact width
+            maxHeight: imgHeight, // Force exact height
+          };
+        } else {
+          // Desktop: original behavior
+          return {
+            width: imgWidth,
+            height: imgHeight,
+          };
+        }
       case 2:
         // Fit Width - same calculation for both platforms
         return {
@@ -221,7 +238,6 @@ export function useImageModal({
             calculatedWidth,
           });
           return {
-            // width: calculatedWidth,
             height: viewportHeight,
             objectFit: "cover",
           };
@@ -230,6 +246,7 @@ export function useImageModal({
           return {
             width: (imgWidth * viewportHeight) / imgHeight,
             height: viewportHeight,
+            objectFit: "cover",
           };
         }
       default:
@@ -254,12 +271,36 @@ export function useImageModal({
     }
 
     // Ensure animation happens
-    imgControls.start({
+    const animationProps = {
       ...zoomStyles,
       x: 0,
       y: 0,
-      transition: { duration: 0.3, ease: "easeOut" },
-    });
+    };
+
+    if (isMobile && imageZoom === 1) {
+      console.log("🎯 Animation Props for Original Size:", animationProps);
+
+      // Debug: Check if image element is being constrained
+      setTimeout(() => {
+        const imgElement = document.querySelector("motion.img") as HTMLImageElement;
+        if (imgElement) {
+          const computedStyle = window.getComputedStyle(imgElement);
+          console.log("🎯 Computed Image Styles:", {
+            width: computedStyle.width,
+            height: computedStyle.height,
+            maxWidth: computedStyle.maxWidth,
+            maxHeight: computedStyle.maxHeight,
+            objectFit: computedStyle.objectFit,
+            "Natural dimensions": {
+              naturalWidth: imgElement.naturalWidth,
+              naturalHeight: imgElement.naturalHeight,
+            },
+          });
+        }
+      }, 100);
+    }
+
+    imgControls.start(animationProps, { duration: 0.3, ease: "easeOut" });
   }, [imageZoom, image.full, imgControls, imageDimensions, isMobile, isLoaded]);
 
   // Panning enabled logic
@@ -271,7 +312,19 @@ export function useImageModal({
 
     if (imageZoom === 1) {
       // Original size - enable panning if image is larger than viewport
-      return imgWidth > viewportWidth || imgHeight > viewportHeight;
+      const needsPanning = imgWidth > viewportWidth || imgHeight > viewportHeight;
+      if (isMobile) {
+        console.log("🎯 Mobile Panning Check:", {
+          imageZoom,
+          imgWidth,
+          imgHeight,
+          viewportWidth,
+          viewportHeight,
+          needsPanning,
+          calculation: `${imgWidth} > ${viewportWidth} || ${imgHeight} > ${viewportHeight}`,
+        });
+      }
+      return needsPanning;
     } else if (imageZoom === 2) {
       // Fit Width - enable panning if scaled height exceeds viewport
       const scaledHeight = (imgHeight * viewportWidth) / imgWidth;
@@ -281,7 +334,52 @@ export function useImageModal({
       return false;
     }
     return false;
-  }, [imageDimensions, imageZoom]);
+  }, [imageDimensions, imageZoom, isMobile]);
+
+  // Mobile gesture support (with proper callbacks and panning awareness)
+  const mobileGestures = useMobileGestures({
+    onDragStart: () => {
+      console.log("🎯 Mobile Gesture: Drag Start");
+    },
+    onDragEnd: () => {
+      console.log("🎯 Mobile Gesture: Drag End");
+    },
+    onSwipeLeft: () => {
+      // Only allow navigation when not in panning mode
+      if (onNextImage && !isPanningEnabled) {
+        console.log("🎯 Mobile Navigation: Next Image");
+        onNextImage();
+      } else if (isPanningEnabled) {
+        console.log("🎯 Swipe Left blocked - in panning mode");
+      }
+    },
+    onSwipeRight: () => {
+      // Only allow navigation when not in panning mode
+      if (onPreviousImage && !isPanningEnabled) {
+        console.log("🎯 Mobile Navigation: Previous Image");
+        onPreviousImage();
+      } else if (isPanningEnabled) {
+        console.log("🎯 Swipe Right blocked - in panning mode");
+      }
+    },
+    onSwipeUp: () => {
+      // Swipe up closes the modal on mobile - but NOT when in panning mode
+      if (!isPanningEnabled) {
+        console.log("🎯 Swipe Up - closing modal");
+        onClose();
+      } else {
+        console.log("🎯 Swipe Up blocked - in panning mode (use double-tap to exit panning)");
+      }
+    },
+    onDoubleTap: () => {
+      // Double tap always available for zoom cycling
+      console.log("🎯 Double Tap - cycling zoom");
+      handleZoomCycle();
+    },
+    // Pass panning state so gestures can coordinate with Framer Motion
+    isPanningEnabled,
+    disabled: hasError, // Only disable on error, keep gestures active for double-tap
+  });
 
   // Pan constraints
   const panConstraints = useMemo(() => {
@@ -291,15 +389,41 @@ export function useImageModal({
     const { width: imgWidth, height: imgHeight } = imageDimensions;
 
     if (imageZoom === 1) {
-      // Original size - constrain to image bounds
+      // Original size - constrain to image bounds properly
       const xOverflow = Math.max(0, imgWidth - viewportWidth);
       const yOverflow = Math.max(0, imgHeight - viewportHeight);
-      return {
+
+      // For proper panning, we need to ensure the image can move to show all parts
+      // When image is centered, we can move it left/up by half the overflow
+      // and right/down by half the overflow to reveal all edges
+      const constraints = {
         left: -xOverflow / 2,
         right: xOverflow / 2,
         top: -yOverflow / 2,
         bottom: yOverflow / 2,
       };
+
+      if (isMobile) {
+        console.log("🎯 Mobile Pan Constraints DEBUG:", {
+          constraints,
+          xOverflow,
+          yOverflow,
+          imageSize: { imgWidth, imgHeight },
+          viewport: { viewportWidth, viewportHeight },
+          "Image larger than viewport": {
+            horizontally: imgWidth > viewportWidth,
+            vertically: imgHeight > viewportHeight,
+          },
+          "Pan calculation": {
+            "xOverflow/2": xOverflow / 2,
+            "yOverflow/2": yOverflow / 2,
+            "left boundary": -xOverflow / 2,
+            "right boundary": xOverflow / 2,
+          },
+        });
+      }
+
+      return constraints;
     } else if (imageZoom === 2) {
       // Fit Width - only vertical panning
       const scaledHeight = (imgHeight * viewportWidth) / imgWidth;
@@ -316,7 +440,7 @@ export function useImageModal({
     } else {
       return { left: 0, right: 0, top: 0, bottom: 0 };
     }
-  }, [imageDimensions, imageZoom]);
+  }, [imageDimensions, imageZoom, isMobile]);
 
   // Zoom label
   const zoomLabel = useMemo(() => {

@@ -13,25 +13,26 @@ export function ImageModal({ core, state, zoom, pan, mobile, refs }: ImageModalP
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 0.3 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      exit={{ opacity: 0.05 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       onClick={(e) => e.target === e.currentTarget && core.onClose()}
     >
       <div
         ref={refs.containerRef}
-        className="relative flex items-center justify-center w-full h-full overflow-hidden"
+        className={`relative w-full h-full ${
+          mobile.isMobile && zoom.imageZoom === 1 && pan.isPanningEnabled
+            ? "flex items-center justify-center overflow-visible" // Keep centering but allow overflow
+            : "flex items-center justify-center overflow-hidden" // Normal centering
+        }`}
         style={{
-          touchAction: mobile.isMobile
-            ? pan.isPanningEnabled
-              ? "none"
-              : "none" // Allow all gestures (including vertical swipe up to close)
-            : "auto",
+          touchAction: mobile.isMobile ? "none" : "auto", // Always prevent default touch on mobile
           WebkitUserSelect: "none",
           userSelect: "none",
         }}
-        {...(mobile.mobileGestureBindings?.() || {})}
+        {...(mobile.isMobile ? mobile.mobileGestureBindings?.() || {} : {})}
+        onDoubleClick={mobile.isMobile ? zoom.handleZoomCycle : undefined} // Fallback double-tap for mobile when panning
       >
         {/* Blurred background - provides visual context while main image loads */}
         <img
@@ -50,7 +51,9 @@ export function ImageModal({ core, state, zoom, pan, mobile, refs }: ImageModalP
             ref={refs.imgRef}
             src={state.loadedSrc}
             alt="Full resolution"
-            className={`relative block object-contain select-none ${
+            className={`relative block ${
+              mobile.isMobile && zoom.imageZoom === 1 ? "" : "object-contain"
+            } select-none ${
               pan.isPanningEnabled ? "cursor-grab" : "cursor-pointer"
             } ${pan.isPanning ? "cursor-grabbing" : ""} ${
               mobile.isGestureActive ? "pointer-events-none" : ""
@@ -58,6 +61,20 @@ export function ImageModal({ core, state, zoom, pan, mobile, refs }: ImageModalP
             style={{
               opacity: state.isLoaded ? 1 : 0,
               transition: "opacity 1s ease",
+              ...(mobile.isMobile && zoom.imageZoom === 1 && pan.isPanningEnabled
+                ? {
+                    // Debug styles for mobile Original size panning
+                    border: "2px solid red",
+                    boxSizing: "border-box",
+                    // Force exact dimensions - override any CSS constraints
+                    width: `${core.imageDimensions?.width}px !important`,
+                    height: `${core.imageDimensions?.height}px !important`,
+                    maxWidth: "none !important",
+                    maxHeight: "none !important",
+                    minWidth: "none !important",
+                    minHeight: "none !important",
+                  }
+                : {}),
             }}
             animate={refs.imgControls}
             transition={{
@@ -66,12 +83,22 @@ export function ImageModal({ core, state, zoom, pan, mobile, refs }: ImageModalP
               type: "tween",
             }}
             onDoubleClick={zoom.handleZoomCycle}
-            drag={pan.isPanningEnabled ? "x" : false} // Only allow horizontal drag when panning
+            drag={pan.isPanningEnabled ? (mobile.isMobile ? true : "x") : false}
             dragConstraints={pan.panConstraints}
             dragElastic={0.05}
             dragMomentum={false}
-            onDragStart={() => pan.setIsPanning(true)}
-            onDragEnd={() => pan.setIsPanning(false)}
+            onDragStart={() => {
+              console.log("🎯 Drag Start:", {
+                isPanningEnabled: pan.isPanningEnabled,
+                imageZoom: zoom.imageZoom,
+                isMobile: mobile.isMobile,
+              });
+              pan.setIsPanning(true);
+            }}
+            onDragEnd={() => {
+              console.log("🎯 Drag End");
+              pan.setIsPanning(false);
+            }}
             whileDrag={{ scale: 0.98 }}
           />
         )}
@@ -82,6 +109,13 @@ export function ImageModal({ core, state, zoom, pan, mobile, refs }: ImageModalP
           onClose={() => pan.setShowPanHint(false)}
         />
         <LoadingOverlay show={core.isPaging || false} />
+
+        {/* Mobile panning mode indicator */}
+        {mobile.isMobile && pan.isPanningEnabled && (
+          <div className="absolute top-4 left-4 z-10 px-3 py-1 bg-black/70 text-white text-sm rounded-full">
+            Pan to explore • Double tap to navigate
+          </div>
+        )}
 
         {/* Desktop Close Button - Always visible on desktop */}
         {!mobile.isMobile && (

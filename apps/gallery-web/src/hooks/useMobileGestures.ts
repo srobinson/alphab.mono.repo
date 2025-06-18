@@ -2,6 +2,10 @@ import { useCallback, useState } from "react";
 import { useIsMobile } from "../utils/device";
 
 interface UseMobileGesturesProps {
+  // TODO: DO we need these
+  onDragStart?: () => void;
+  onDragEnd?: () => void;
+
   onSwipeLeft?: () => void;
   onSwipeRight?: () => void;
   onSwipeUp?: () => void;
@@ -9,6 +13,8 @@ interface UseMobileGesturesProps {
   onDoubleTap?: () => void;
   disabled?: boolean;
   swipeThreshold?: number;
+  // Panning coordination
+  isPanningEnabled?: boolean;
 }
 
 interface GestureState {
@@ -24,6 +30,8 @@ interface TouchStart {
 }
 
 export function useMobileGestures({
+  onDragStart,
+  onDragEnd,
   onSwipeLeft,
   onSwipeRight,
   onSwipeUp,
@@ -31,6 +39,7 @@ export function useMobileGestures({
   onDoubleTap,
   disabled = false,
   swipeThreshold = 50,
+  isPanningEnabled = false,
 }: UseMobileGesturesProps) {
   const [gestureState, setGestureState] = useState<GestureState>({
     isSwipeActive: false,
@@ -133,31 +142,43 @@ export function useMobileGestures({
         threshold: swipeThreshold,
       });
 
+      // Adjust thresholds based on panning state
+      const effectiveThreshold = isPanningEnabled ? swipeThreshold * 2 : swipeThreshold;
+      const effectiveVelocityThreshold = isPanningEnabled ? 1.0 : 0.5;
+
       // Check if swipe threshold met
       if (
-        horizontalDistance > swipeThreshold ||
-        verticalDistance > swipeThreshold ||
-        velocity > 0.5
+        horizontalDistance > effectiveThreshold ||
+        verticalDistance > effectiveThreshold ||
+        velocity > effectiveVelocityThreshold
       ) {
         if (horizontalDistance >= verticalDistance) {
           // Horizontal swipe
           if (deltaX > 0 && onSwipeRight) {
-            console.log("🎯 Triggering swipe RIGHT");
+            console.log("🎯 Triggering swipe RIGHT", { isPanningEnabled, effectiveThreshold });
             onSwipeRight();
           } else if (deltaX < 0 && onSwipeLeft) {
-            console.log("🎯 Triggering swipe LEFT");
+            console.log("🎯 Triggering swipe LEFT", { isPanningEnabled, effectiveThreshold });
             onSwipeLeft();
           }
         } else {
           // Vertical swipe
           if (deltaY < 0 && onSwipeUp) {
-            console.log("🎯 Triggering swipe UP");
+            console.log("🎯 Triggering swipe UP", { isPanningEnabled, effectiveThreshold });
             onSwipeUp();
           } else if (deltaY > 0 && onSwipeDown) {
-            console.log("🎯 Triggering swipe DOWN");
+            console.log("🎯 Triggering swipe DOWN", { isPanningEnabled, effectiveThreshold });
             onSwipeDown();
           }
         }
+      } else if (isPanningEnabled) {
+        console.log("🎯 Touch event allowed to pass through for panning", {
+          horizontalDistance,
+          verticalDistance,
+          effectiveThreshold,
+          velocity,
+          effectiveVelocityThreshold,
+        });
       }
 
       // Reset state
